@@ -95,6 +95,10 @@ public class PasswordChangeController {
                 throw new MessageBusException((Throwable) reply);
             }
 
+            //successful call
+            String uid = "ex_teste";
+            setPasswordInLdap(uid, password);
+
             response.setRenderParameter("success", "success");
 
         } catch (PasswordChangeException ex) {
@@ -103,5 +107,9 @@ public class PasswordChangeController {
             response.setRenderParameter("failure", "Det gick inte att ändra lösenord. Försök igen senare.");
             e.printStackTrace();
         }
+    }
+
+    private void setPasswordInLdap(String uid, String password) {
+
     }
 }
