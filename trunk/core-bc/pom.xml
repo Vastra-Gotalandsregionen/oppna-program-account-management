@@ -21,6 +21,7 @@ Generation time : 2011-10-18 13:49:06 CEST
   <name>${project.artifactId}</name>
 
   <modules>
+    <module>composites/camel</module>
     <module>composites/types</module>
     <module>composites/svc</module>
     <module>composites/webcomp</module>
@@ -28,4 +29,9 @@ Generation time : 2011-10-18 13:49:06 CEST
     <module>modules/portlet</module>
     <module>modules/intsvc</module>
   </modules>
+
+  <properties>
+    <spring.version>3.0.5.RELEASE</spring.version>
+  </properties>
+
 </project>

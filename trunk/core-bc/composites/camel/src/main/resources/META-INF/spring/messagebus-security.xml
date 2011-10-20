@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:http="http://cxf.apache.org/transports/http/configuration"
+       xmlns:sec="http://cxf.apache.org/configuration/security"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://cxf.apache.org/configuration/security
+       http://cxf.apache.org/schemas/configuration/security.xsd
+       http://cxf.apache.org/transports/http/configuration
+       http://cxf.apache.org/schemas/configuration/http-conf.xsd">
+
+  <!-- The name of each <http:conduit> configuration is matched to the url used by CXF RS. -->
+
+  <!--<http:conduit name="https://esb.vgregion.se:63080/.*">
+    <http:tlsClientParameters disableCNCheck="true">
+      <sec:trustManagers>
+        <sec:keyStore type="jks" password="changeit" resource="META-INF/esb.vgregion.se.ts"/>
+      </sec:trustManagers>
+      &lt;!&ndash; It is possible to add a keyManager for mutual authentication. &ndash;&gt;
+      &lt;!&ndash;<sec:keyManagers keyPassword="clientpass">
+        <sec:keyStore type="jks" password="clientpass" resource="cert/clientkeystore.jks"/>
+      </sec:keyManagers>&ndash;&gt;
+    </http:tlsClientParameters>
+  </http:conduit>
+
+  <http:conduit name="https://esb.vgregion.se:63090/.*">
+    <http:tlsClientParameters disableCNCheck="true">
+      <sec:trustManagers>
+        <sec:keyStore type="jks" password="changeit" resource="META-INF/esb.vgregion.se.ts"/>
+      </sec:trustManagers>
+      &lt;!&ndash;<sec:keyManagers keyPassword="clientpass">
+        <sec:keyStore type="jks" password="clientpass" resource="cert/clientkeystore.jks"/>
+      </sec:keyManagers>&ndash;&gt;
+    </http:tlsClientParameters>
+  </http:conduit>
+
+  <http:conduit name="https://vgms0141.vgregion.se:40102/.*">
+    <http:tlsClientParameters disableCNCheck="true">
+      <sec:trustManagers>
+        <sec:keyStore type="jks" password="changeit" resource="META-INF/SITHS.ts"/>
+      </sec:trustManagers>
+      &lt;!&ndash; It is possible to add a keyManager for mutual authentication. &ndash;&gt;
+      &lt;!&ndash;<sec:keyManagers keyPassword="clientpass">
+        <sec:keyStore type="jks" password="clientpass" resource="cert/clientkeystore.jks"/>
+      </sec:keyManagers>&ndash;&gt;
+    </http:tlsClientParameters>
+  </http:conduit>
+
+  <http:conduit name="https://vgms0141.vgregion.se:40102/.*">
+    <http:tlsClientParameters disableCNCheck="true">
+      <sec:trustManagers>
+        <sec:keyStore type="jks" password="changeit" resource="META-INF/SITHS.ts"/>
+      </sec:trustManagers>
+      </http:tlsClientParameters>
+  </http:conduit>-->
+
+
+</beans>

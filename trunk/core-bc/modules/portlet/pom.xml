@@ -20,7 +20,7 @@ Generation time : 2011-10-18 13:49:06 CEST
   <name>${project.artifactId}</name>
 
   <build>
-    <finalName>${project.artifactId}</finalName>
+    <finalName>account-management-portlet</finalName>
     <plugins>
       <plugin>
         <!-- Configure eclipse plug-in to generate a context root that does not have the version number on it -->
@@ -37,6 +37,11 @@ Generation time : 2011-10-18 13:49:06 CEST
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>oppna-program-account-management-core-bc-composite-webcomp</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>oppna-program-account-management-core-bc-composite-camel</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -74,22 +79,26 @@ Generation time : 2011-10-18 13:49:06 CEST
       <artifactId>spring-web</artifactId>
       <version>${spring.version}</version>
     </dependency>
+
     <dependency>
       <!-- required by the Spring-JS resource-loading servlet -->
       <groupId>org.springframework</groupId>
       <artifactId>spring-webmvc</artifactId>
       <version>${spring.version}</version>
     </dependency>
+
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-webmvc-portlet</artifactId>
       <version>${spring.version}</version>
     </dependency>
+
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context</artifactId>
       <version>${spring.version}</version>
     </dependency>
+
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context-support</artifactId>
@@ -100,11 +109,16 @@ Generation time : 2011-10-18 13:49:06 CEST
       <groupId>javax.servlet</groupId>
       <artifactId>servlet-api</artifactId>
     </dependency>
-  </dependencies>
 
-  <properties>
-    <spring.version>3.0.5.RELEASE</spring.version>
-  </properties>
+    <dependency>
+      <groupId>com.liferay.portal</groupId>
+      <artifactId>portal-service</artifactId>
+      <version>${liferay.version}</version>
+      <scope>provided</scope>
+      <!--<classifier>ee</classifier>-->
+    </dependency>
+    
+  </dependencies>
 
   <profiles>
     <profile>

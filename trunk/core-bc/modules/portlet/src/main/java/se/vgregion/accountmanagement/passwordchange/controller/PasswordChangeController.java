@@ -19,6 +19,10 @@
 
 package se.vgregion.accountmanagement.passwordchange.controller;
 
+import com.liferay.portal.kernel.messaging.Message;
+import com.liferay.portal.kernel.messaging.MessageBusException;
+import com.liferay.portal.kernel.messaging.MessageBusUtil;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,6 +42,9 @@ import javax.portlet.ActionResponse;
 @RequestMapping("VIEW")
 public class PasswordChangeController {
 
+    @Value("${changepassword.messagebus.destination}")
+    private String messagebusDestination;
+
     @RenderMapping
     public String showPasswordChangeForm() {
         return "passwordChangeForm";
@@ -47,6 +54,11 @@ public class PasswordChangeController {
     public String showPasswordChangeFormWithError(@RequestParam(value = "failure") String errorMessage, Model model) {
         model.addAttribute("errorMessage", errorMessage);
         return "passwordChangeForm";
+    }
+
+    @RenderMapping(params = "success")
+    public String showSuccessPage() {
+        return "success";
     }
 
     @ActionMapping(params = "action=changePassword")
@@ -67,13 +79,29 @@ public class PasswordChangeController {
                     throw new PasswordChangeException("Lösenordet måste vara minst 6 tecken.");
                 }
             } else {
-                throw new PasswordChangeException("Fyll i lösenord");
+                throw new PasswordChangeException("Fyll i lösenord.");
             }
 
+            Message message = new Message();
+            message.setPayload("<xml>Ture</xml>");
             //make call to change password
+            final int timeout = 10000;
+            Object reply = MessageBusUtil.sendSynchronousMessage(messagebusDestination, message, timeout);
+
+            if (reply == null) {
+                throw new MessageBusException("No reply was given. Is destination [" + messagebusDestination + "]"
+                        + " really configured?");
+            } else if (reply instanceof Throwable) {
+                throw new MessageBusException((Throwable) reply);
+            }
+
+            response.setRenderParameter("success", "success");
 
         } catch (PasswordChangeException ex) {
             response.setRenderParameter("failure", ex.getMessage());
+        } catch (MessageBusException e) {
+            response.setRenderParameter("failure", "Det gick inte att ändra lösenord. Försök igen senare.");
+            e.printStackTrace();
         }
     }
 }
