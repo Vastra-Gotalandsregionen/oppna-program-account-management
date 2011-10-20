@@ -21,7 +21,6 @@
 
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
 <style type="text/css">
     #changePasswordTable tr td {
@@ -29,28 +28,9 @@
     }
 </style>
 
-<portlet:actionURL var="changePasswordAction">
-    <portlet:param name="action" value="changePassword"/>
-</portlet:actionURL>
+<portlet:renderURL var="returnUrl">
+</portlet:renderURL>
 
-<c:if test="${not empty errorMessage}">
-    <div class="portlet-msg-error">
-        ${errorMessage}
-    </div>
-</c:if>
-
-<form action="${changePasswordAction}" method="POST">
-    <table id="changePasswordTable" style="width: auto;">
-        <tr>
-            <td>Lösenord:</td>
-            <td><input type="password" name="password" autocomplete="off"/></td>
-        </tr>
-        <tr>
-            <td>Bekräfta lösenord:</td>
-            <td><input type="password" name="passwordConfirm" autocomplete="off"/></td>
-        </tr>
-        <tr>
-            <td colspan="2" style="text-align: right;"><input type="submit" value="Ändra lösenord"/></td>
-        </tr>
-    </table>
-</form>
+<div class="portlet-msg-success">
+    Ditt lösenord är nu ändrat. <a href="${returnUrl}">Tillbaka</a>
+</div>
