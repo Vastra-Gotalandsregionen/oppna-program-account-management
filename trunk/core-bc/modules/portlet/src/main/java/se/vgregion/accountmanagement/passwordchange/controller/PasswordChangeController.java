@@ -22,6 +22,7 @@ package se.vgregion.accountmanagement.passwordchange.controller;
 import com.liferay.portal.kernel.messaging.Message;
 import com.liferay.portal.kernel.messaging.MessageBusException;
 import com.liferay.portal.kernel.messaging.MessageBusUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -30,9 +31,18 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.portlet.bind.annotation.ActionMapping;
 import org.springframework.web.portlet.bind.annotation.RenderMapping;
 import se.vgregion.accountmanagement.passwordchange.PasswordChangeException;
+import se.vgregion.ldapservice.LdapUser;
+import se.vgregion.ldapservice.SimpleLdapServiceImpl;
 
+import javax.naming.directory.BasicAttribute;
+import javax.naming.directory.DirContext;
+import javax.naming.directory.ModificationItem;
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
+import javax.xml.bind.DatatypeConverter;
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * @author Patrik Bergström
@@ -41,6 +51,9 @@ import javax.portlet.ActionResponse;
 @Controller
 @RequestMapping("VIEW")
 public class PasswordChangeController {
+
+    @Autowired
+    private SimpleLdapServiceImpl simpleLdapService;
 
     @Value("${changepassword.messagebus.destination}")
     private String messagebusDestination;
@@ -109,7 +122,23 @@ public class PasswordChangeController {
         }
     }
 
-    private void setPasswordInLdap(String uid, String password) {
+    protected void setPasswordInLdap(String uid, String password) {
+        LdapUser ldapUser = simpleLdapService.getLdapUserByUid(uid);
+        String encPassword = null;
+        try {
+            MessageDigest md5 = MessageDigest.getInstance("MD5");
+            byte[] digest = md5.digest(password.getBytes("UTF-8"));
+            encPassword = "{MD5}" + DatatypeConverter.printBase64Binary(digest);
+        } catch (UnsupportedEncodingException e) {
+            //won't happen
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            //won't happen
+            e.printStackTrace();
+        }
+        simpleLdapService.getLdapTemplate().getLdapOperations().modifyAttributes(
+                ldapUser.getDn(), new ModificationItem[]{new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
+                new BasicAttribute("userPassword", encPassword))});
 
     }
 }
