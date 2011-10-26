@@ -27,4 +27,8 @@ public class PasswordChangeException extends Exception {
     public PasswordChangeException(String message) {
         super(message);
     }
+
+    public PasswordChangeException(Throwable e) {
+        super(e);
+    }
 }

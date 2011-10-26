@@ -1,9 +1,15 @@
 package se.vgregion.accountmanagement.passwordchange.controller;
 
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.messaging.MessageBus;
 import com.liferay.portal.kernel.messaging.MessageBusUtil;
 import com.liferay.portal.kernel.messaging.sender.MessageSender;
 import com.liferay.portal.kernel.messaging.sender.SynchronousMessageSender;
+import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.model.Role;
+import com.liferay.portal.model.User;
+import com.liferay.portal.theme.ThemeDisplay;
 import junit.framework.TestCase;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,16 +21,13 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.ldap.core.DirContextAdapter;
-import org.springframework.ldap.core.simple.ParameterizedContextMapper;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.ui.Model;
+import se.vgregion.accountmanagement.passwordchange.PasswordChangeException;
 import se.vgregion.ldapservice.SimpleLdapServiceImpl;
 import se.vgregion.ldapservice.SimpleLdapUser;
 
-import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
-import javax.naming.directory.Attribute;
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.xml.bind.DatatypeConverter;
@@ -32,7 +35,6 @@ import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Random;
 
 import static org.mockito.Mockito.*;
@@ -42,7 +44,6 @@ import static org.mockito.Mockito.*;
  */
 @PrepareForTest(MessageBusUtil.class)
 @RunWith(MockitoJUnitRunner.class)
-//@ContextConfiguration({"classpath:applicationContext-test.xml}"})
 public class PasswordChangeControllerTest extends TestCase {
 
     private PasswordChangeController controller;// = new PasswordChangeController();
@@ -51,6 +52,7 @@ public class PasswordChangeControllerTest extends TestCase {
 
     @Before
     public void setup() {
+        //We do it this way since we run with MockitoJUnitRunner and can't run with Spring's runner concurrently.
         ApplicationContext ctx = new ClassPathXmlApplicationContext("applicationContext-test.xml");
         controller = ctx.getBean(PasswordChangeController.class);
         simpleLdapService = (SimpleLdapServiceImpl) ctx.getBean("simpleLdapService");
@@ -82,6 +84,9 @@ public class PasswordChangeControllerTest extends TestCase {
     @Test
     public void testChangePassword() throws Exception {
 
+        //initial setup
+        ActionRequest request = prepareForIsDominoUserMethod(false);
+
         //Given
         PowerMockito.mockStatic(MessageBusUtil.class);
         MessageBusUtil.init(mock(MessageBus.class), mock(MessageSender.class), mock(SynchronousMessageSender.class));
@@ -97,7 +102,6 @@ public class PasswordChangeControllerTest extends TestCase {
                 });
         ReflectionTestUtils.setField(controller, "messagebusDestination", messagebusDestination);
         ActionResponse response = mock(ActionResponse.class);
-        ActionRequest request = mock(ActionRequest.class);
         when(request.getParameter("password")).thenReturn("123abc");
         when(request.getParameter("passwordConfirm")).thenReturn("123abc");
 
@@ -108,8 +112,29 @@ public class PasswordChangeControllerTest extends TestCase {
         verify(response).setRenderParameter(eq("success"), anyString());
     }
 
+    private ActionRequest prepareForIsDominoUserMethod(boolean isDomino) throws PortalException, SystemException {
+        ActionRequest request = mock(ActionRequest.class);
+        ThemeDisplay themeDisplay = new ThemeDisplay();
+        User user = mock(User.class);
+        themeDisplay.setUser(user);
+        when(request.getAttribute(WebKeys.THEME_DISPLAY)).thenReturn(themeDisplay);
+
+        //add a role
+        if (isDomino) {
+            ArrayList<Role> roles = new ArrayList<Role>();
+            Role role1 = mock(Role.class);
+            when(role1.getTitle()).thenReturn("Domino");
+            roles.add(role1);
+            when(user.getRoles()).thenReturn(roles);
+        }
+        return request;
+    }
+
     @Test
     public void testChangePasswordNoReply() throws Exception {
+
+        //initial setup
+        ActionRequest request = prepareForIsDominoUserMethod(true);
 
         //Given
         PowerMockito.mockStatic(MessageBusUtil.class);
@@ -125,7 +150,6 @@ public class PasswordChangeControllerTest extends TestCase {
                 });
         ReflectionTestUtils.setField(controller, "messagebusDestination", messagebusDestination);
         ActionResponse response = mock(ActionResponse.class);
-        ActionRequest request = mock(ActionRequest.class);
         when(request.getParameter("password")).thenReturn("123abc");
         when(request.getParameter("passwordConfirm")).thenReturn("123abc");
 
@@ -165,23 +189,53 @@ public class PasswordChangeControllerTest extends TestCase {
     }
 
     @Test
-    public void testSetPasswordInLdap() throws NoSuchAlgorithmException, UnsupportedEncodingException, NamingException {
-        SimpleLdapUser ldapUser = (SimpleLdapUser) simpleLdapService.getLdapUserByUid("ex_teste");
+    public void testIsDominoUser() throws PasswordChangeException, SystemException, PortalException {
+        //initial setup
+        ActionRequest request = mock(ActionRequest.class);
+        ThemeDisplay themeDisplay = new ThemeDisplay();
+        User user = mock(User.class);
+        themeDisplay.setUser(user);
+        when(request.getAttribute(WebKeys.THEME_DISPLAY)).thenReturn(themeDisplay);
 
-        assertNotNull(ldapUser);
+        //first try with no roles
+        assertFalse(controller.isDominoUser(request));
 
-        ldapUser.getAttributes();
+        //add a role
+        ArrayList<Role> roles = new ArrayList<Role>();
+        Role role1 = mock(Role.class);
+        when(role1.getTitle()).thenReturn("someArbitraryTitle");
+        roles.add(role1);
+        when(user.getRoles()).thenReturn(roles);
+
+        //now try with a role that isn't domino
+        assertFalse(controller.isDominoUser(request));
+
+        //now add a domino role
+        Role role2 = mock(Role.class);
+        when(role2.getTitle()).thenReturn("DominoRole");
+        roles.add(role2);
+
+        //verify we get "true" back
+        assertTrue(controller.isDominoUser(request));
+    }
+
+    @Test
+    public void testSetPasswordInLdap() throws NoSuchAlgorithmException, UnsupportedEncodingException,
+            NamingException, PasswordChangeException {
+
+        MessageDigest md5 = MessageDigest.getInstance("MD5");
 
         String newPassword = "test" + new Random().nextInt(100);
         System.out.println("New password = " + newPassword);
 
+        //do it
         controller.setPasswordInLdap("ex_teste", newPassword);
 
-        MessageDigest md5 = MessageDigest.getInstance("MD5");
+        //verify
         byte[] digest = md5.digest(newPassword.getBytes("UTF-8"));
         String expecedEncryptedPassword = "{MD5}" + DatatypeConverter.printBase64Binary(digest);
 
-        ldapUser = (SimpleLdapUser) simpleLdapService.getLdapUserByUid("ex_teste");
+        SimpleLdapUser ldapUser = (SimpleLdapUser) simpleLdapService.getLdapUserByUid("ex_teste");
         byte[] userPassword = (byte[]) ldapUser.getAttributes(new String[]{"userPassword"}).get("userPassword").get();
         String encryptedPassword = new String(userPassword, "UTF-8");
 
