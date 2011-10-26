@@ -78,10 +78,19 @@ public class PasswordChangeControllerTest extends TestCase {
 
     @Test
     public void testShowPasswordChangeFormWithError() throws Exception {
+        //Given
+        RenderRequest request = mock(RenderRequest.class);
+        ThemeDisplay themeDisplay = new ThemeDisplay();
+        User user = mock(User.class);
+        themeDisplay.setUser(user);
+        when(request.getAttribute(WebKeys.THEME_DISPLAY)).thenReturn(themeDisplay);
         String errorMessage = "Ett felmeddelande.";
         Model model = mock(Model.class);
-        String view = controller.showPasswordChangeFormWithError(errorMessage, model);
 
+        //do
+        String view = controller.showPasswordChangeFormWithError(errorMessage, request, model);
+
+        //verify
         verify(model).addAttribute(eq("errorMessage"), eq(errorMessage));
 
     }
