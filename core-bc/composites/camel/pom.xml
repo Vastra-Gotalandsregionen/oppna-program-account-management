@@ -17,7 +17,7 @@
     <dependency>
       <groupId>se.vgregion.commons-util</groupId>
       <artifactId>commons-util-core-bc-composite-svc-camel</artifactId>
-      <version>3.6</version>
+      <version>3.8-SNAPSHOT</version>
       <scope>compile</scope>
       <exclusions>
         <exclusion>

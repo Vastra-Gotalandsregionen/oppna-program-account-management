@@ -56,7 +56,7 @@ public class PasswordChangeControllerTest extends TestCase {
         //We do it this way since we run with MockitoJUnitRunner and can't run with Spring's runner concurrently.
         ApplicationContext ctx = new ClassPathXmlApplicationContext("applicationContext-test.xml");
         controller = ctx.getBean(PasswordChangeController.class);
-        simpleLdapService = (SimpleLdapServiceImpl) ctx.getBean("simpleLdapService");
+        simpleLdapService = mock(SimpleLdapServiceImpl.class);
     }
 
     //A method counts as a method in the test coverage statistics ;)
@@ -97,6 +97,12 @@ public class PasswordChangeControllerTest extends TestCase {
 
         //initial setup
         ActionRequest request = prepareForIsDominoUserMethod(false);
+        //initial setup
+        ThemeDisplay themeDisplay = new ThemeDisplay();
+        User user = mock(User.class);
+        when(user.getScreenName()).thenReturn("ex_teste");
+        themeDisplay.setUser(user);
+        when(request.getAttribute(WebKeys.THEME_DISPLAY)).thenReturn(themeDisplay);
 
         //Given
         PowerMockito.mockStatic(MessageBusUtil.class);
@@ -175,6 +181,13 @@ public class PasswordChangeControllerTest extends TestCase {
     public void testChangePasswordPasswordValidateError() throws Exception {
 
         //Given
+        //initial setup
+        ActionRequest request = mock(ActionRequest.class);
+        ThemeDisplay themeDisplay = new ThemeDisplay();
+        User user = mock(User.class);
+        themeDisplay.setUser(user);
+        when(request.getAttribute(WebKeys.THEME_DISPLAY)).thenReturn(themeDisplay);
+
         PowerMockito.mockStatic(MessageBusUtil.class);
         MessageBusUtil.init(mock(MessageBus.class), mock(MessageSender.class), mock(SynchronousMessageSender.class));
         String messagebusDestination = "vgr/change_password";
@@ -188,7 +201,6 @@ public class PasswordChangeControllerTest extends TestCase {
                 });
         ReflectionTestUtils.setField(controller, "messagebusDestination", messagebusDestination);
         ActionResponse response = mock(ActionResponse.class);
-        ActionRequest request = mock(ActionRequest.class);
         when(request.getParameter("password")).thenReturn("123abc");
         when(request.getParameter("passwordConfirm")).thenReturn("anotherPassword");
 
@@ -235,21 +247,26 @@ public class PasswordChangeControllerTest extends TestCase {
             NamingException, PasswordChangeException {
 
         MessageDigest md5 = MessageDigest.getInstance("MD5");
-
         String newPassword = "test" + new Random().nextInt(100);
-        System.out.println("New password = " + newPassword);
+
+        byte[] digest = md5.digest(newPassword.getBytes("UTF-8"));
+        String encryptedPassword = "{MD5}" + DatatypeConverter.printBase64Binary(digest);
+
+        SimpleLdapUser user = new SimpleLdapUser("anyString");
+        user.setAttributeValue("userPassword", encryptedPassword.getBytes());
+        when(simpleLdapService.getLdapUserByUid("ex_teste")).thenReturn(user);
 
         //do it
         controller.setPasswordInLdap("ex_teste", newPassword);
 
         //verify
-        byte[] digest = md5.digest(newPassword.getBytes("UTF-8"));
-        String expecedEncryptedPassword = "{MD5}" + DatatypeConverter.printBase64Binary(digest);
+        byte[] digest2 = md5.digest(newPassword.getBytes("UTF-8"));
+        String expecedEncryptedPassword = "{MD5}" + DatatypeConverter.printBase64Binary(digest2);
 
         SimpleLdapUser ldapUser = (SimpleLdapUser) simpleLdapService.getLdapUserByUid("ex_teste");
         byte[] userPassword = (byte[]) ldapUser.getAttributes(new String[]{"userPassword"}).get("userPassword").get();
-        String encryptedPassword = new String(userPassword, "UTF-8");
+        String encryptedPassword2 = new String(userPassword, "UTF-8");
 
-        assertEquals(expecedEncryptedPassword, encryptedPassword);
+        assertEquals(expecedEncryptedPassword, encryptedPassword2);
     }
 }
