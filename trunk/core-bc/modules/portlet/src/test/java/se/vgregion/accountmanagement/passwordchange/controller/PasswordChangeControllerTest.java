@@ -14,6 +14,8 @@ import junit.framework.TestCase;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
@@ -21,6 +23,8 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.ldap.core.LdapOperations;
+import org.springframework.ldap.core.simple.SimpleLdapTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.ui.Model;
 import se.vgregion.accountmanagement.passwordchange.PasswordChangeException;
@@ -47,17 +51,11 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class PasswordChangeControllerTest extends TestCase {
 
-    private PasswordChangeController controller;// = new PasswordChangeController();
-
+    @Mock
     private SimpleLdapServiceImpl simpleLdapService;
 
-    @Before
-    public void setup() {
-        //We do it this way since we run with MockitoJUnitRunner and can't run with Spring's runner concurrently.
-        ApplicationContext ctx = new ClassPathXmlApplicationContext("applicationContext-test.xml");
-        controller = ctx.getBean(PasswordChangeController.class);
-        simpleLdapService = mock(SimpleLdapServiceImpl.class);
-    }
+    @InjectMocks
+    private PasswordChangeController controller = new PasswordChangeController();
 
     //A method counts as a method in the test coverage statistics ;)
     @Test
@@ -264,6 +262,12 @@ public class PasswordChangeControllerTest extends TestCase {
         SimpleLdapUser user = new SimpleLdapUser("anyString");
         user.setAttributeValue("userPassword", encryptedPassword.getBytes());
         when(simpleLdapService.getLdapUserByUid("ex_teste")).thenReturn(user);
+        SimpleLdapTemplate simpleLdapTemplate = mock(SimpleLdapTemplate.class);
+        LdapOperations ldapOperations = mock(LdapOperations.class);
+        when(simpleLdapTemplate.getLdapOperations()).thenReturn(ldapOperations);
+        when(simpleLdapService.getLdapTemplate()).thenReturn(simpleLdapTemplate);
+
+//                .getLdapOperations().modifyAttributes();
 
         //do it
         controller.setPasswordInLdap("ex_teste", newPassword);
