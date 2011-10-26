@@ -30,6 +30,7 @@ import se.vgregion.ldapservice.SimpleLdapUser;
 import javax.naming.NamingException;
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
+import javax.portlet.RenderRequest;
 import javax.xml.bind.DatatypeConverter;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
@@ -61,7 +62,17 @@ public class PasswordChangeControllerTest extends TestCase {
     //A method counts as a method in the test coverage statistics ;)
     @Test
     public void testShowPasswordChangeForm() throws Exception {
-        String view = controller.showPasswordChangeForm();
+        //Given
+        RenderRequest request = mock(RenderRequest.class);
+        ThemeDisplay themeDisplay = new ThemeDisplay();
+        User user = mock(User.class);
+        themeDisplay.setUser(user);
+        when(request.getAttribute(WebKeys.THEME_DISPLAY)).thenReturn(themeDisplay);
+
+        //Go
+        String view = controller.showPasswordChangeForm(request, mock(Model.class));
+
+        //Verify
         assertNotNull(view);
     }
 

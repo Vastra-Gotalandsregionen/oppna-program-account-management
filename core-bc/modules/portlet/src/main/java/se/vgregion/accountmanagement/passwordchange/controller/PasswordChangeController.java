@@ -44,6 +44,8 @@ import javax.naming.directory.DirContext;
 import javax.naming.directory.ModificationItem;
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
+import javax.portlet.PortletRequest;
+import javax.portlet.RenderRequest;
 import javax.xml.bind.DatatypeConverter;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
@@ -65,8 +67,33 @@ public class PasswordChangeController {
     private String messagebusDestination;
 
     @RenderMapping
-    public String showPasswordChangeForm() {
+    public String showPasswordChangeForm(RenderRequest request, Model model) {
+
+        //lookup user's vgr id
+        String screenName = lookupScreenName(request);
+        if (screenName != null) {
+            model.addAttribute("vgrId", screenName);
+        } else {
+            model.addAttribute("errorMessage", "Kunde inte hitta ditt vgr-id.");
+        }
+
+
         return "passwordChangeForm";
+    }
+
+    private String lookupScreenName(PortletRequest request) {
+        String screenName;
+        ThemeDisplay themeDisplay = (ThemeDisplay) request.getAttribute(WebKeys.THEME_DISPLAY);
+        if (themeDisplay.getUser() != null) {
+            screenName = themeDisplay.getUser().getScreenName();
+            if (screenName != null) {
+                return screenName;
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
     }
 
     @RenderMapping(params = "failure")
@@ -86,6 +113,9 @@ public class PasswordChangeController {
         String passwordConfirm = request.getParameter("passwordConfirm");
 
         try {
+            //lookup user's vgr id
+            String screenName = lookupScreenName(request);
+
             //validate
             if (password != null) {
                 if (!password.equals(passwordConfirm)) {
@@ -116,11 +146,11 @@ public class PasswordChangeController {
                 } else if (reply instanceof Throwable) {
                     throw new MessageBusException((Throwable) reply);
                 }
+            } else {
+                //no domino -> continue with setting password in LDAP only
+                setPasswordInLdap(screenName, password);
             }
 
-            //successful call or no call -> continue with setting password in LDAP
-            String uid = "ex_teste";
-            setPasswordInLdap(uid, password);
 
             response.setRenderParameter("success", "success");
 
@@ -153,6 +183,16 @@ public class PasswordChangeController {
 
     protected void setPasswordInLdap(String uid, String password) throws PasswordChangeException {
         SimpleLdapUser ldapUser = (SimpleLdapUser) simpleLdapService.getLdapUserByUid(uid);
+
+        if (ldapUser == null) {
+            throw new PasswordChangeException("Din användare kunde inte hittas i katalogservern.");
+        }
+
+        //todo temporärt för att inte göra testmissar
+        if (!uid.equals("ex_teste")) {
+            throw new PasswordChangeException("tillfälligt att bara ex_teste kan ändra sitt lösenord");
+        }
+
         String encPassword = null;
         try {
             MessageDigest md5 = MessageDigest.getInstance("MD5");

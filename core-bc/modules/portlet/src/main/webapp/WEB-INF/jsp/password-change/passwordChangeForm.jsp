@@ -27,6 +27,10 @@
     #changePasswordTable tr td {
         padding: 4px;
     }
+
+    #changePasswordTable .borderRow td {
+        border: 1px solid #ccc;
+    }
 </style>
 
 <portlet:actionURL var="changePasswordAction">
@@ -41,11 +45,15 @@
 
 <form action="${changePasswordAction}" method="POST">
     <table id="changePasswordTable" style="width: auto;">
-        <tr>
+        <tr class="borderRow">
+            <td>VGR-ID:</td>
+            <td>${vgrId}</td>
+        </tr>
+        <tr class="borderRow">
             <td>Lösenord:</td>
             <td><input type="password" name="password" autocomplete="off"/></td>
         </tr>
-        <tr>
+        <tr class="borderRow">
             <td>Bekräfta lösenord:</td>
             <td><input type="password" name="passwordConfirm" autocomplete="off"/></td>
         </tr>

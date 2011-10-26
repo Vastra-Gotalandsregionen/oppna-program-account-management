@@ -20,11 +20,7 @@
 --%>
 
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet" %>
 
-<portlet:renderURL var="returnUrl">
-</portlet:renderURL>
-
-<div class="portlet-msg-success">
-    Ditt lösenord är nu ändrat. <a href="${returnUrl}">Tillbaka</a>
+<div class="portlet-msg-error">
+    ${errorMessage}
 </div>
