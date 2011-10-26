@@ -50,7 +50,9 @@ import javax.xml.bind.DatatypeConverter;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Patrik Bergström
@@ -135,22 +137,25 @@ public class PasswordChangeController {
 
             if (isDomino) {
                 Message message = new Message();
-                message.setPayload("<xml>Ture</xml>");
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("uid", screenName);
+                params.put("password", password);
+                message.setPayload(params);
+
                 //make call to change password
                 final int timeout = 10000;
                 Object reply = MessageBusUtil.sendSynchronousMessage(messagebusDestination, message, timeout);
 
                 if (reply == null) {
-                    throw new MessageBusException("No reply was given. Is destination [" + messagebusDestination + "]"
-                            + " really configured?");
+                    throw new MessageBusException("No reply was given. Is destination [" + messagebusDestination
+                            + "] really configured?");
                 } else if (reply instanceof Throwable) {
                     throw new MessageBusException((Throwable) reply);
                 }
             } else {
-                //no domino -> continue with setting password in LDAP only
+                //no domino -> continue with setting password in LDAP only, directly
                 setPasswordInLdap(screenName, password);
             }
-
 
             response.setRenderParameter("success", "success");
 
