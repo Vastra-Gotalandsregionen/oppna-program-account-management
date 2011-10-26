@@ -19,9 +19,13 @@
 
 package se.vgregion.accountmanagement.passwordchange.controller;
 
+import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.messaging.Message;
 import com.liferay.portal.kernel.messaging.MessageBusException;
 import com.liferay.portal.kernel.messaging.MessageBusUtil;
+import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.model.Role;
+import com.liferay.portal.theme.ThemeDisplay;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -31,9 +35,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.portlet.bind.annotation.ActionMapping;
 import org.springframework.web.portlet.bind.annotation.RenderMapping;
 import se.vgregion.accountmanagement.passwordchange.PasswordChangeException;
-import se.vgregion.ldapservice.LdapUser;
 import se.vgregion.ldapservice.SimpleLdapServiceImpl;
+import se.vgregion.ldapservice.SimpleLdapUser;
 
+import javax.naming.NamingException;
 import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.ModificationItem;
@@ -43,6 +48,7 @@ import javax.xml.bind.DatatypeConverter;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 
 /**
  * @author Patrik Bergström
@@ -95,20 +101,24 @@ public class PasswordChangeController {
                 throw new PasswordChangeException("Fyll i lösenord.");
             }
 
-            Message message = new Message();
-            message.setPayload("<xml>Ture</xml>");
-            //make call to change password
-            final int timeout = 10000;
-            Object reply = MessageBusUtil.sendSynchronousMessage(messagebusDestination, message, timeout);
+            boolean isDomino = isDominoUser(request);
 
-            if (reply == null) {
-                throw new MessageBusException("No reply was given. Is destination [" + messagebusDestination + "]"
-                        + " really configured?");
-            } else if (reply instanceof Throwable) {
-                throw new MessageBusException((Throwable) reply);
+            if (isDomino) {
+                Message message = new Message();
+                message.setPayload("<xml>Ture</xml>");
+                //make call to change password
+                final int timeout = 10000;
+                Object reply = MessageBusUtil.sendSynchronousMessage(messagebusDestination, message, timeout);
+
+                if (reply == null) {
+                    throw new MessageBusException("No reply was given. Is destination [" + messagebusDestination + "]"
+                            + " really configured?");
+                } else if (reply instanceof Throwable) {
+                    throw new MessageBusException((Throwable) reply);
+                }
             }
 
-            //successful call
+            //successful call or no call -> continue with setting password in LDAP
             String uid = "ex_teste";
             setPasswordInLdap(uid, password);
 
@@ -122,8 +132,27 @@ public class PasswordChangeController {
         }
     }
 
-    protected void setPasswordInLdap(String uid, String password) {
-        LdapUser ldapUser = simpleLdapService.getLdapUserByUid(uid);
+    boolean isDominoUser(ActionRequest request) throws PasswordChangeException {
+        ThemeDisplay themeDisplay = (ThemeDisplay) request.getAttribute(WebKeys.THEME_DISPLAY);
+        try {
+            List<Role> roles = themeDisplay.getUser().getRoles();
+            if (roles != null) {
+                for (Role role : roles) {
+                    String title = role.getTitle();
+                    if (title != null && title.toLowerCase().contains("domino")) {
+                        return true;
+                    }
+                }
+            }
+            //no domino role found
+            return false;
+        } catch (SystemException e) {
+            throw new PasswordChangeException(e);
+        }
+    }
+
+    protected void setPasswordInLdap(String uid, String password) throws PasswordChangeException {
+        SimpleLdapUser ldapUser = (SimpleLdapUser) simpleLdapService.getLdapUserByUid(uid);
         String encPassword = null;
         try {
             MessageDigest md5 = MessageDigest.getInstance("MD5");
@@ -139,6 +168,22 @@ public class PasswordChangeController {
         simpleLdapService.getLdapTemplate().getLdapOperations().modifyAttributes(
                 ldapUser.getDn(), new ModificationItem[]{new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
                 new BasicAttribute("userPassword", encPassword))});
+
+        //verify
+        ldapUser = (SimpleLdapUser) simpleLdapService.getLdapUserByUid(uid);
+        byte[] userPassword;
+        try {
+            userPassword = (byte[]) ldapUser.getAttributes(new String[]{"userPassword"}).get("userPassword").get();
+            String passwordToVerify = new String(userPassword, "UTF-8");
+            if (!encPassword.equals(passwordToVerify)) {
+                throw new PasswordChangeException("Lyckades inte byta lösenord.");
+            }
+        } catch (NamingException e) {
+            throw new PasswordChangeException(e);
+        } catch (UnsupportedEncodingException e) {
+            //won't happen
+            e.printStackTrace();
+        }
 
     }
 }
