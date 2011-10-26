@@ -99,9 +99,10 @@ public class PasswordChangeController {
     }
 
     @RenderMapping(params = "failure")
-    public String showPasswordChangeFormWithError(@RequestParam(value = "failure") String errorMessage, Model model) {
+    public String showPasswordChangeFormWithError(@RequestParam(value = "failure") String errorMessage,
+                                                  RenderRequest request, Model model) {
         model.addAttribute("errorMessage", errorMessage);
-        return "passwordChangeForm";
+        return showPasswordChangeForm(request, model);
     }
 
     @RenderMapping(params = "success")
@@ -134,6 +135,7 @@ public class PasswordChangeController {
             }
 
             boolean isDomino = isDominoUser(request);
+            System.out.println(isDomino = true);
 
             if (isDomino) {
                 Message message = new Message();
