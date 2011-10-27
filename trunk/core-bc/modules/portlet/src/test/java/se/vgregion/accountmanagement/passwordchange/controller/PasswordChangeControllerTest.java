@@ -11,7 +11,6 @@ import com.liferay.portal.model.Role;
 import com.liferay.portal.model.User;
 import com.liferay.portal.theme.ThemeDisplay;
 import junit.framework.TestCase;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -21,8 +20,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.ldap.core.LdapOperations;
 import org.springframework.ldap.core.simple.SimpleLdapTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -99,17 +96,27 @@ public class PasswordChangeControllerTest extends TestCase {
         assertNotNull(view);
     }
 
+    //This tests the flow of the changePassword method and verifies that "success" is set on the response. It does
+    //not verify that the password is set.
     @Test
     public void testChangePassword() throws Exception {
 
         //initial setup
         ActionRequest request = prepareForIsDominoUserMethod(false);
-        //initial setup
         ThemeDisplay themeDisplay = new ThemeDisplay();
         User user = mock(User.class);
         when(user.getScreenName()).thenReturn("ex_teste");
         themeDisplay.setUser(user);
         when(request.getAttribute(WebKeys.THEME_DISPLAY)).thenReturn(themeDisplay);
+
+        String userId = "ex_teste";
+        MessageDigest md5 = MessageDigest.getInstance("MD5");
+        String newPassword = "123abc";
+
+        byte[] digest = md5.digest(newPassword.getBytes("UTF-8"));
+        String encryptedPassword = "{MD5}" + DatatypeConverter.printBase64Binary(digest);
+
+        setupUserInMockLdapService(userId, encryptedPassword);
 
         //Given
         PowerMockito.mockStatic(MessageBusUtil.class);
@@ -126,8 +133,8 @@ public class PasswordChangeControllerTest extends TestCase {
                 });
         ReflectionTestUtils.setField(controller, "messagebusDestination", messagebusDestination);
         ActionResponse response = mock(ActionResponse.class);
-        when(request.getParameter("password")).thenReturn("123abc");
-        when(request.getParameter("passwordConfirm")).thenReturn("123abc");
+        when(request.getParameter("password")).thenReturn(newPassword);
+        when(request.getParameter("passwordConfirm")).thenReturn(newPassword);
 
         //Do
         controller.changePassword(request, response);
@@ -154,6 +161,7 @@ public class PasswordChangeControllerTest extends TestCase {
         return request;
     }
 
+    //This test verifies that "failure" is set on hte response when no reply is returned from the messageBus.
     @Test
     public void testChangePasswordNoReply() throws Exception {
 
@@ -184,6 +192,7 @@ public class PasswordChangeControllerTest extends TestCase {
         verify(response).setRenderParameter(eq("failure"), anyString());
     }
 
+    //This tests the flow when two non-equal passwords are entered. A failure should result.
     @Test
     public void testChangePasswordPasswordValidateError() throws Exception {
 
@@ -208,8 +217,9 @@ public class PasswordChangeControllerTest extends TestCase {
                 });
         ReflectionTestUtils.setField(controller, "messagebusDestination", messagebusDestination);
         ActionResponse response = mock(ActionResponse.class);
+
         when(request.getParameter("password")).thenReturn("123abc");
-        when(request.getParameter("passwordConfirm")).thenReturn("anotherPassword");
+        when(request.getParameter("passwordConfirm")).thenReturn("anotherPassword"); //The important thing with this test
 
         //Do
         controller.changePassword(request, response);
@@ -218,6 +228,7 @@ public class PasswordChangeControllerTest extends TestCase {
         verify(response).setRenderParameter(eq("failure"), anyString());
     }
 
+    //Test the isDominoUser method.
     @Test
     public void testIsDominoUser() throws PasswordChangeException, SystemException, PortalException {
         //initial setup
@@ -249,28 +260,23 @@ public class PasswordChangeControllerTest extends TestCase {
         assertTrue(controller.isDominoUser(request));
     }
 
+    //Test the setPasswordInLdap method. It verifies that the password is correctly set but the ldap service is
+    //mocked so it does not test it all the way.
     @Test
     public void testSetPasswordInLdap() throws NoSuchAlgorithmException, UnsupportedEncodingException,
             NamingException, PasswordChangeException {
 
+        String userId = "ex_teste";
         MessageDigest md5 = MessageDigest.getInstance("MD5");
         String newPassword = "test" + new Random().nextInt(100);
 
         byte[] digest = md5.digest(newPassword.getBytes("UTF-8"));
         String encryptedPassword = "{MD5}" + DatatypeConverter.printBase64Binary(digest);
 
-        SimpleLdapUser user = new SimpleLdapUser("anyString");
-        user.setAttributeValue("userPassword", encryptedPassword.getBytes());
-        when(simpleLdapService.getLdapUserByUid("ex_teste")).thenReturn(user);
-        SimpleLdapTemplate simpleLdapTemplate = mock(SimpleLdapTemplate.class);
-        LdapOperations ldapOperations = mock(LdapOperations.class);
-        when(simpleLdapTemplate.getLdapOperations()).thenReturn(ldapOperations);
-        when(simpleLdapService.getLdapTemplate()).thenReturn(simpleLdapTemplate);
-
-//                .getLdapOperations().modifyAttributes();
+        setupUserInMockLdapService(userId, encryptedPassword);
 
         //do it
-        controller.setPasswordInLdap("ex_teste", newPassword);
+        controller.setPasswordInLdap(userId, newPassword);
 
         //verify
         byte[] digest2 = md5.digest(newPassword.getBytes("UTF-8"));
@@ -281,5 +287,15 @@ public class PasswordChangeControllerTest extends TestCase {
         String encryptedPassword2 = new String(userPassword, "UTF-8");
 
         assertEquals(expecedEncryptedPassword, encryptedPassword2);
+    }
+
+    private void setupUserInMockLdapService(String userId, String encryptedPassword) {
+        SimpleLdapUser user = new SimpleLdapUser("anyString");
+        user.setAttributeValue("userPassword", encryptedPassword.getBytes());
+        when(simpleLdapService.getLdapUserByUid(userId)).thenReturn(user);
+        SimpleLdapTemplate simpleLdapTemplate = mock(SimpleLdapTemplate.class);
+        LdapOperations ldapOperations = mock(LdapOperations.class);
+        when(simpleLdapTemplate.getLdapOperations()).thenReturn(ldapOperations);
+        when(simpleLdapService.getLdapTemplate()).thenReturn(simpleLdapTemplate);
     }
 }

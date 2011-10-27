@@ -135,7 +135,6 @@ public class PasswordChangeController {
             }
 
             boolean isDomino = isDominoUser(request);
-            System.out.println(isDomino = true);
 
             if (isDomino) {
                 Message message = new Message();
@@ -193,11 +192,6 @@ public class PasswordChangeController {
 
         if (ldapUser == null) {
             throw new PasswordChangeException("Din användare kunde inte hittas i katalogservern.");
-        }
-
-        //todo temporärt för att inte göra testmissar
-        if (!uid.equals("ex_teste")) {
-            throw new PasswordChangeException("tillfälligt att bara ex_teste kan ändra sitt lösenord");
         }
 
         String encPassword = null;
