@@ -35,6 +35,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.portlet.bind.annotation.ActionMapping;
 import org.springframework.web.portlet.bind.annotation.RenderMapping;
 import se.vgregion.accountmanagement.passwordchange.PasswordChangeException;
+import se.vgregion.http.HttpRequest;
 import se.vgregion.ldapservice.SimpleLdapServiceImpl;
 import se.vgregion.ldapservice.SimpleLdapUser;
 
@@ -138,10 +139,11 @@ public class PasswordChangeController {
 
             if (isDomino) {
                 Message message = new Message();
-                Map<String, String> params = new HashMap<String, String>();
-                params.put("uid", screenName);
-                params.put("password", password);
-                message.setPayload(params);
+                String queryString = String.format("Openagent&username=%s&password=%s", screenName, password);
+                HttpRequest httpRequest = new HttpRequest();
+                httpRequest.setQueryByString(queryString);
+                //see se.vgregion.messagebus.EndpointMessageListener.createExchange() to see how the payload object is handled
+                message.setPayload(httpRequest);
 
                 //make call to change password
                 final int timeout = 10000;

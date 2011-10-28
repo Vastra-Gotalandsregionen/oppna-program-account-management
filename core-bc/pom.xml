@@ -27,7 +27,6 @@ Generation time : 2011-10-18 13:49:06 CEST
     <module>composites/webcomp</module>
     <module>composites/schema</module>
     <module>modules/portlet</module>
-    <module>modules/intsvc</module>
   </modules>
 
   <properties>
