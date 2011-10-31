@@ -121,19 +121,7 @@ public class PasswordChangeController {
             String screenName = lookupScreenName(request);
 
             //validate
-            if (password != null) {
-                if (!password.equals(passwordConfirm)) {
-                    throw new PasswordChangeException("Lösenorden matchar inte.");
-                }
-                //TODO what password policy do we have?
-                //validate strength
-                final int i = 6;
-                if (password.length() < i) {
-                    throw new PasswordChangeException("Lösenordet måste vara minst 6 tecken.");
-                }
-            } else {
-                throw new PasswordChangeException("Fyll i lösenord.");
-            }
+            validatePassword(password, passwordConfirm);
 
             boolean isDomino = isDominoUser(request);
 
@@ -160,6 +148,8 @@ public class PasswordChangeController {
                 setPasswordInLdap(screenName, password);
             }
 
+            verifyPasswordWasModified(screenName, encryptWithMd5(password));
+
             response.setRenderParameter("success", "success");
 
         } catch (PasswordChangeException ex) {
@@ -167,6 +157,27 @@ public class PasswordChangeController {
         } catch (MessageBusException e) {
             response.setRenderParameter("failure", "Det gick inte att ändra lösenord. Försök igen senare.");
             e.printStackTrace();
+        }
+    }
+
+    protected void validatePassword(String password, String passwordConfirm) throws PasswordChangeException {
+        if (password != null) {
+            if (!password.equals(passwordConfirm)) {
+                throw new PasswordChangeException("Lösenorden matchar inte.");
+            }
+            //validate strength
+            final int i = 6;
+            if (password.length() < i) {
+                throw new PasswordChangeException("Lösenordet måste vara minst 6 tecken.");
+            }
+            if (!password.matches("[a-zA-Z0-9]*")) {
+                throw new PasswordChangeException("Lösenordet får bara innehålla bokstäver och siffror");
+            }
+            if (!(password.matches(".*[a-zA-Z]+.*") && password.matches(".*[0-9]+.*"))) {
+                throw new PasswordChangeException("Lösenordet måste innehålla både bokstäver och siffror");
+            }
+        } else {
+            throw new PasswordChangeException("Fyll i lösenord.");
         }
     }
 
@@ -196,6 +207,16 @@ public class PasswordChangeController {
             throw new PasswordChangeException("Din användare kunde inte hittas i katalogservern.");
         }
 
+        String encPassword = encryptWithMd5(password);
+
+        simpleLdapService.getLdapTemplate().getLdapOperations().modifyAttributes(
+                ldapUser.getDn(), new ModificationItem[]{new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
+                new BasicAttribute("userPassword", encPassword))});
+
+        verifyPasswordWasModified(uid, encPassword);
+    }
+
+    private String encryptWithMd5(String password) {
         String encPassword = null;
         try {
             MessageDigest md5 = MessageDigest.getInstance("MD5");
@@ -208,11 +229,11 @@ public class PasswordChangeController {
             //won't happen
             e.printStackTrace();
         }
-        simpleLdapService.getLdapTemplate().getLdapOperations().modifyAttributes(
-                ldapUser.getDn(), new ModificationItem[]{new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
-                new BasicAttribute("userPassword", encPassword))});
+        return encPassword;
+    }
 
-        //verify
+    private void verifyPasswordWasModified(String uid, String encPassword) throws PasswordChangeException {
+        SimpleLdapUser ldapUser;//verify
         ldapUser = (SimpleLdapUser) simpleLdapService.getLdapUserByUid(uid);
         byte[] userPassword;
         try {
@@ -227,6 +248,5 @@ public class PasswordChangeController {
             //won't happen
             e.printStackTrace();
         }
-
     }
 }
