@@ -51,9 +51,7 @@ import javax.xml.bind.DatatypeConverter;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Patrik Bergström
@@ -68,6 +66,19 @@ public class PasswordChangeController {
 
     @Value("${changepassword.messagebus.destination}")
     private String messagebusDestination;
+    @Value("${basic_authentication.username}")
+    private String basicAuthUsername;
+    @Value("${basic_authentication.password}")
+    private String basicAuthPassword;
+
+
+    public PasswordChangeController() {
+
+    }
+
+    public PasswordChangeController(SimpleLdapServiceImpl simpleLdapService) {
+        this.simpleLdapService = simpleLdapService;
+    }
 
     @RenderMapping
     public String showPasswordChangeForm(RenderRequest request, Model model) {
@@ -130,6 +141,7 @@ public class PasswordChangeController {
                 String queryString = String.format("Openagent&username=%s&password=%s", screenName, password);
                 HttpRequest httpRequest = new HttpRequest();
                 httpRequest.setQueryByString(queryString);
+                httpRequest.addBasicAuthentication(basicAuthUsername, basicAuthPassword);
                 //see se.vgregion.messagebus.EndpointMessageListener.createExchange() to see how the payload object is handled
                 message.setPayload(httpRequest);
 
@@ -216,7 +228,7 @@ public class PasswordChangeController {
         verifyPasswordWasModified(uid, encPassword);
     }
 
-    private String encryptWithMd5(String password) {
+    protected String encryptWithMd5(String password) {
         String encPassword = null;
         try {
             MessageDigest md5 = MessageDigest.getInstance("MD5");
@@ -232,7 +244,7 @@ public class PasswordChangeController {
         return encPassword;
     }
 
-    private void verifyPasswordWasModified(String uid, String encPassword) throws PasswordChangeException {
+    protected void verifyPasswordWasModified(String uid, String encPassword) throws PasswordChangeException {
         SimpleLdapUser ldapUser;//verify
         ldapUser = (SimpleLdapUser) simpleLdapService.getLdapUserByUid(uid);
         byte[] userPassword;

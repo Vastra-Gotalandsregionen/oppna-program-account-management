@@ -49,7 +49,7 @@ import static org.mockito.Mockito.*;
 public class PasswordChangeControllerTest extends TestCase {
 
     @Mock
-    private SimpleLdapServiceImpl simpleLdapService;
+    private SimpleLdapServiceImpl simpleLdapService; //this is injected in the @InjectMocks-annotated instance
 
     @InjectMocks
     private PasswordChangeController controller = new PasswordChangeController();
