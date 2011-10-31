@@ -22,43 +22,29 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://liferay.com/tld/aui" prefix="aui" %>
 
-<style type="text/css">
-    #changePasswordTable tr td {
-        padding: 4px;
-    }
-
-    #changePasswordTable .borderRow td {
-        border: 1px solid #ccc;
-    }
-</style>
+<link href="${pageContext.request.contextPath}/css/style.css" type="text/css" rel="stylesheet" />
 
 <portlet:actionURL var="changePasswordAction">
     <portlet:param name="action" value="changePassword"/>
 </portlet:actionURL>
 
+<div>Här ändrar du ditt VGR-lösenord... Förslag på text?</div>
+
 <c:if test="${not empty errorMessage}">
     <div class="portlet-msg-error">
-        ${errorMessage}
+            ${errorMessage}
     </div>
 </c:if>
 
-<form action="${changePasswordAction}" method="POST">
-    <table id="changePasswordTable" style="width: auto;">
-        <tr class="borderRow">
-            <td>VGR-ID:</td>
-            <td>${vgrId}</td>
-        </tr>
-        <tr class="borderRow">
-            <td>Lösenord:</td>
-            <td><input type="password" name="password" autocomplete="off"/></td>
-        </tr>
-        <tr class="borderRow">
-            <td>Bekräfta lösenord:</td>
-            <td><input type="password" name="passwordConfirm" autocomplete="off"/></td>
-        </tr>
-        <tr>
-            <td colspan="2" style="text-align: right;"><input type="submit" value="Ändra lösenord"/></td>
-        </tr>
-    </table>
+<form id="changePasswordForm" action="${changePasswordAction}" method="POST">
+    <div><b>VGR-ID:</b> ${vgrId}</div>
+    <div><aui:input type="password" label="Lösenord" inlineField="true" name="password"
+                    helpMessage="Lösenord med både siffror och bokstäver och endast siffror och bokstäver. Minst
+                    6 tecken."
+                    autocomplete="off"/></div>
+    <div><aui:input type="password" label="Bekräfta lösenord" inlineField="true" name="passwordConfirm"
+                    autocomplete="off"/></div>
+    <div><input type="submit" value="Ändra lösenord"/></div>
 </form>
