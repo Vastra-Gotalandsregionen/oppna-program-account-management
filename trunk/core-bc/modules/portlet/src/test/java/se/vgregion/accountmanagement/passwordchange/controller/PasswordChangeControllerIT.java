@@ -17,6 +17,7 @@ import se.vgregion.accountmanagement.passwordchange.PasswordChangeException;
 import se.vgregion.http.HttpRequest;
 import se.vgregion.ldapservice.SimpleLdapServiceImpl;
 
+import javax.xml.bind.JAXBException;
 import java.util.Random;
 
 /**
@@ -42,13 +43,12 @@ public class PasswordChangeControllerIT extends TestCase {
     @Autowired
     private SimpleLdapServiceImpl simpleLdapService;
 
-
     @Test
     @Ignore //Run this when needed. It changes (if successful) the domino and ldap password for a given user.
-    public void setDominoPassword() throws MessageBusException, PasswordChangeException {
+    public void setDominoPassword() throws MessageBusException, PasswordChangeException, JAXBException {
         Message message = new Message();
-        String userVgrId = "ex_teste";
-        String newUserPassword = "1234567";
+        String userVgrId = "xxtst1";
+        String newUserPassword = "password2";
         String queryString = String.format("Openagent&username=%s&password=%s", userVgrId, newUserPassword);
         HttpRequest httpRequest = new HttpRequest();
         httpRequest.setQueryByString(queryString);
@@ -61,6 +61,13 @@ public class PasswordChangeControllerIT extends TestCase {
         Object result = sender.send(messagebusDestination, message, 15000);
 
         System.out.println(result);
+
+//        result = "<html><head></head><body text=\"#0000\">Content</body></html>";
+//        JAXBContext jc = JAXBContext.newInstance(Html.class);
+//        Html html = (Html) jc.createUnmarshaller().unmarshal(new StringReader((String) result));
+//        System.out.println(html.getBody().getText());
+//        System.out.println(html.getBody().getValue());
+//        System.out.println(html.getHead());
 
         //verify it has been set in ldap
         PasswordChangeController passwordChangeController = new PasswordChangeController(simpleLdapService);
