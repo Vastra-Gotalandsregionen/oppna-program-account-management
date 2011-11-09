@@ -110,20 +110,19 @@ public class PasswordChangeController {
         }
     }
 
-    @RenderMapping(params = "failure")
-    public String showPasswordChangeFormWithError(@RequestParam(value = "failure") String errorMessage,
-                                                  RenderRequest request, Model model) {
-        model.addAttribute("errorMessage", errorMessage);
-        return showPasswordChangeForm(request, model);
-    }
-
     @RenderMapping(params = "success")
     public String showSuccessPage() {
         return "success";
     }
 
+    @RenderMapping(params = "failure=dominoNotImplemented")
+    public String showDominoNotImplementedPage() {
+        return "dominoNotImplemented";
+    }
+
     @ActionMapping(params = "action=changePassword")
-    public void changePassword(ActionRequest request, ActionResponse response) throws PasswordChangeException {
+    public void changePassword(ActionRequest request, ActionResponse response, Model model)
+            throws PasswordChangeException {
         String password = request.getParameter("password");
         String passwordConfirm = request.getParameter("passwordConfirm");
 
@@ -137,7 +136,9 @@ public class PasswordChangeController {
             boolean isDomino = isDominoUser(request);
 
             if (isDomino) {
-                Message message = new Message();
+                response.setRenderParameter("failure", "dominoNotImplemented");
+                //keep commented until we get ok to set password in domino
+                /*Message message = new Message();
                 String queryString = String.format("Openagent&username=%s&password=%s", screenName, password);
                 HttpRequest httpRequest = new HttpRequest();
                 httpRequest.setQueryByString(queryString);
@@ -154,22 +155,27 @@ public class PasswordChangeController {
                             + "] really configured?");
                 } else if (reply instanceof Throwable) {
                     throw new MessageBusException((Throwable) reply);
-                }
+                }*/
             } else {
                 //no domino -> continue with setting password in LDAP only, directly
                 setPasswordInLdap(screenName, password);
+                verifyPasswordWasModified(screenName, encryptWithMd5(password)); //temporary? change when we
+                // implement domino password change
+                response.setRenderParameter("success", "success");
+
             }
 
-            verifyPasswordWasModified(screenName, encryptWithMd5(password));
+//            verifyPasswordWasModified(screenName, encryptWithMd5(password)); temporary - change when we implement
+// domino password change
 
-            response.setRenderParameter("success", "success");
+//            response.setRenderParameter("success", "success");
 
         } catch (PasswordChangeException ex) {
-            response.setRenderParameter("failure", ex.getMessage());
-        } catch (MessageBusException e) {
-            response.setRenderParameter("failure", "Det gick inte att ändra lösenord. Försök igen senare.");
+            model.addAttribute("errorMessage", ex.getMessage());
+        } /*catch (MessageBusException e) {
+            model.addAttribute("errorMessage", "Det gick inte att ändra lösenord. Försök igen senare.");
             e.printStackTrace();
-        }
+        }*/
     }
 
     protected void validatePassword(String password, String passwordConfirm) throws PasswordChangeException {

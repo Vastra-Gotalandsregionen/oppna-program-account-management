@@ -11,6 +11,7 @@ import com.liferay.portal.model.Role;
 import com.liferay.portal.model.User;
 import com.liferay.portal.theme.ThemeDisplay;
 import junit.framework.TestCase;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -72,25 +73,6 @@ public class PasswordChangeControllerTest extends TestCase {
     }
 
     @Test
-    public void testShowPasswordChangeFormWithError() throws Exception {
-        //Given
-        RenderRequest request = mock(RenderRequest.class);
-        ThemeDisplay themeDisplay = new ThemeDisplay();
-        User user = mock(User.class);
-        themeDisplay.setUser(user);
-        when(request.getAttribute(WebKeys.THEME_DISPLAY)).thenReturn(themeDisplay);
-        String errorMessage = "Ett felmeddelande.";
-        Model model = mock(Model.class);
-
-        //do
-        String view = controller.showPasswordChangeFormWithError(errorMessage, request, model);
-
-        //verify
-        verify(model).addAttribute(eq("errorMessage"), eq(errorMessage));
-
-    }
-
-    @Test
     public void testShowSuccessPage() throws Exception {
         String view = controller.showSuccessPage();
         assertNotNull(view);
@@ -137,7 +119,7 @@ public class PasswordChangeControllerTest extends TestCase {
         when(request.getParameter("passwordConfirm")).thenReturn(newPassword);
 
         //Do
-        controller.changePassword(request, response);
+        controller.changePassword(request, response, mock(Model.class));
 
         //Verify
         verify(response).setRenderParameter(eq("success"), anyString());
@@ -163,6 +145,7 @@ public class PasswordChangeControllerTest extends TestCase {
 
     //This test verifies that "failure" is set on hte response when no reply is returned from the messageBus.
     @Test
+    @Ignore //until we implement password change for domino users
     public void testChangePasswordNoReply() throws Exception {
 
         //initial setup
@@ -186,7 +169,7 @@ public class PasswordChangeControllerTest extends TestCase {
         when(request.getParameter("passwordConfirm")).thenReturn("123abc");
 
         //Do
-        controller.changePassword(request, response);
+        controller.changePassword(request, response, mock(Model.class));
 
         //Verify
         verify(response).setRenderParameter(eq("failure"), anyString());
@@ -222,10 +205,11 @@ public class PasswordChangeControllerTest extends TestCase {
         when(request.getParameter("passwordConfirm")).thenReturn("anotherPassword"); //The important thing with this test
 
         //Do
-        controller.changePassword(request, response);
+        Model model = mock(Model.class);
+        controller.changePassword(request, response, model);
 
         //Verify
-        verify(response).setRenderParameter(eq("failure"), anyString());
+        verify(model).addAttribute(eq("errorMessage"), anyString());
     }
 
     //Test the isDominoUser method.
