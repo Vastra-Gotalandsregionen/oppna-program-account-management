@@ -166,13 +166,13 @@ public class PasswordChangeController {
             } else {
                 //no domino -> continue with setting password in LDAP only, directly
                 setPasswordInLdap(screenName, password);
-                verifyPasswordWasModified(screenName, encryptWithMd5(password)); //temporary? change when we
+                verifyPasswordWasModified(screenName, encryptWithSha(password)); //temporary? change when we
                 // implement domino password change
                 response.setRenderParameter("success", "success");
 
             }
 
-//            verifyPasswordWasModified(screenName, encryptWithMd5(password)); temporary - change when we implement
+//            verifyPasswordWasModified(screenName, encryptWithSha(password)); temporary - change when we implement
 // domino password change
 
 //            response.setRenderParameter("success", "success");
@@ -233,21 +233,19 @@ public class PasswordChangeController {
             throw new PasswordChangeException("Din användare kunde inte hittas i katalogservern.");
         }
 
-        String encPassword = encryptWithMd5(password);
+        String encPassword = encryptWithSha(password);
 
         simpleLdapService.getLdapTemplate().getLdapOperations().modifyAttributes(
                 ldapUser.getDn(), new ModificationItem[]{new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
                 new BasicAttribute("userPassword", encPassword))});
-
-        verifyPasswordWasModified(uid, encPassword);
     }
 
-    protected String encryptWithMd5(String password) {
+    protected String encryptWithSha(String password) {
         String encPassword = null;
         try {
-            MessageDigest md5 = MessageDigest.getInstance("MD5");
-            byte[] digest = md5.digest(password.getBytes("UTF-8"));
-            encPassword = "{MD5}" + DatatypeConverter.printBase64Binary(digest);
+            MessageDigest sha = MessageDigest.getInstance("SHA");
+            byte[] digest = sha.digest(password.getBytes("UTF-8"));
+            encPassword = "{SHA}" + DatatypeConverter.printBase64Binary(digest);
         } catch (UnsupportedEncodingException e) {
             //won't happen
             e.printStackTrace();
