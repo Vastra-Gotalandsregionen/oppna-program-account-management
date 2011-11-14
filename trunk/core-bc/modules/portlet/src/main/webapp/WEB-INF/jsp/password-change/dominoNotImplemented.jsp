@@ -22,10 +22,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet" %>
 
-<portlet:renderURL var="returnUrl">
-</portlet:renderURL>
-
-<div class="portlet-msg-error">
-    Lösenordet som du har till Regionportalen är samma som det du fått för att nå e-post, kalender mm via webben.
-    Vill du ändra lösenordet gör du det i webbmailen under egna uppgifter. <a href="${returnUrl}">Tillbaka</a>
+<div class="portlet-msg-info">
+    Lösenordet som du har till Regionportalen är samma som det du fått för att nå e-post, kalender m.m. via webben.
+    Vill du ändra lösenordet gör du det i webbmailen under egna uppgifter.
 </div>
