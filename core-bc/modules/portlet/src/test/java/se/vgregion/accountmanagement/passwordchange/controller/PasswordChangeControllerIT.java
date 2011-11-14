@@ -71,7 +71,7 @@ public class PasswordChangeControllerIT extends TestCase {
 
         //verify it has been set in ldap
         PasswordChangeController passwordChangeController = new PasswordChangeController(simpleLdapService);
-        passwordChangeController.verifyPasswordWasModified(userVgrId, passwordChangeController.encryptWithMd5(
+        passwordChangeController.verifyPasswordWasModified(userVgrId, passwordChangeController.encryptWithSha(
                 newUserPassword));
     }
 

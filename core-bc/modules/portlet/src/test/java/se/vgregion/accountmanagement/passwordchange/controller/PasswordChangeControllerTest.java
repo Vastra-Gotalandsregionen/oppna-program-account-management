@@ -100,11 +100,11 @@ public class PasswordChangeControllerTest extends TestCase {
         when(request.getAttribute(WebKeys.THEME_DISPLAY)).thenReturn(themeDisplay);
 
         String userId = "ex_teste";
-        MessageDigest md5 = MessageDigest.getInstance("MD5");
+        MessageDigest sha = MessageDigest.getInstance("SHA");
         String newPassword = "123abc";
 
-        byte[] digest = md5.digest(newPassword.getBytes("UTF-8"));
-        String encryptedPassword = "{MD5}" + DatatypeConverter.printBase64Binary(digest);
+        byte[] digest = sha.digest(newPassword.getBytes("UTF-8"));
+        String encryptedPassword = "{SHA}" + DatatypeConverter.printBase64Binary(digest);
 
         setupUserInMockLdapService(userId, encryptedPassword);
 
@@ -258,11 +258,11 @@ public class PasswordChangeControllerTest extends TestCase {
             NamingException, PasswordChangeException {
 
         String userId = "ex_teste";
-        MessageDigest md5 = MessageDigest.getInstance("MD5");
-        String newPassword = "test" + new Random().nextInt(100);
+        MessageDigest sha1Digest = MessageDigest.getInstance("SHA");
+        String newPassword = "test";// + new Random().nextInt(100);
 
-        byte[] digest = md5.digest(newPassword.getBytes("UTF-8"));
-        String encryptedPassword = "{MD5}" + DatatypeConverter.printBase64Binary(digest);
+        byte[] digest = sha1Digest.digest(newPassword.getBytes("UTF-8"));
+        String encryptedPassword = "{SHA}" + DatatypeConverter.printBase64Binary(digest);
 
         setupUserInMockLdapService(userId, encryptedPassword);
 
@@ -270,8 +270,8 @@ public class PasswordChangeControllerTest extends TestCase {
         controller.setPasswordInLdap(userId, newPassword);
 
         //verify
-        byte[] digest2 = md5.digest(newPassword.getBytes("UTF-8"));
-        String expecedEncryptedPassword = "{MD5}" + DatatypeConverter.printBase64Binary(digest2);
+        byte[] digest2 = sha1Digest.digest(newPassword.getBytes("UTF-8"));
+        String expecedEncryptedPassword = "{SHA}" + DatatypeConverter.printBase64Binary(digest2);
 
         SimpleLdapUser ldapUser = (SimpleLdapUser) simpleLdapService.getLdapUserByUid("ex_teste");
         byte[] userPassword = (byte[]) ldapUser.getAttributes(new String[]{"userPassword"}).get("userPassword").get();
