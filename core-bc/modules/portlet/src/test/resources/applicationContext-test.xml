@@ -32,6 +32,7 @@
       <list>
         <value>classpath:ldap.properties</value>
         <value>classpath:META-INF/camel.properties</value>
+        <value>classpath:application.properties</value>
       </list>
     </property>
   </bean>

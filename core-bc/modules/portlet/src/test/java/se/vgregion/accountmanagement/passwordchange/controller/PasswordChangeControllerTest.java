@@ -9,6 +9,7 @@ import com.liferay.portal.kernel.messaging.sender.SynchronousMessageSender;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.model.Role;
 import com.liferay.portal.model.User;
+import com.liferay.portal.model.UserGroup;
 import com.liferay.portal.theme.ThemeDisplay;
 import junit.framework.TestCase;
 import org.junit.Ignore;
@@ -21,6 +22,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.ldap.core.LdapOperations;
 import org.springframework.ldap.core.simple.SimpleLdapTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -38,6 +40,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import static org.mockito.Mockito.*;
@@ -55,7 +58,12 @@ public class PasswordChangeControllerTest extends TestCase {
     @InjectMocks
     private PasswordChangeController controller = new PasswordChangeController();
 
-    //A method counts as a method in the test coverage statistics ;)
+    private String dominoUsersUserGroupName = "DominoUsers";
+
+    {
+        controller.setDominoUsersUserGroupName(dominoUsersUserGroupName);
+    }
+
     @Test
     public void testShowPasswordChangeForm() throws Exception {
         //Given
@@ -226,19 +234,18 @@ public class PasswordChangeControllerTest extends TestCase {
         assertFalse(controller.isDominoUser(request));
 
         //add a role
-        ArrayList<Role> roles = new ArrayList<Role>();
-        Role role1 = mock(Role.class);
-        when(role1.getTitle()).thenReturn("someArbitraryTitle");
-        roles.add(role1);
-        when(user.getRoles()).thenReturn(roles);
+        List<UserGroup> userGroups = new ArrayList<UserGroup>();
+        UserGroup userGroup1 = mock(UserGroup.class);
+        when(userGroup1.getName()).thenReturn("someArbitraryName");
+        when(user.getUserGroups()).thenReturn(userGroups);
 
         //now try with a role that isn't domino
         assertFalse(controller.isDominoUser(request));
 
         //now add a domino role
-        Role role2 = mock(Role.class);
-        when(role2.getTitle()).thenReturn("DominoRole");
-        roles.add(role2);
+        UserGroup userGroup2 = mock(UserGroup.class);
+        when(userGroup2.getName()).thenReturn(dominoUsersUserGroupName);
+        userGroups.add(userGroup2);
 
         //verify we get "true" back
         assertTrue(controller.isDominoUser(request));
