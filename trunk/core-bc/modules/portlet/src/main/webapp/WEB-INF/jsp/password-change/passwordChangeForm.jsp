@@ -30,7 +30,7 @@
     <portlet:param name="action" value="changePassword"/>
 </portlet:actionURL>
 
-<div>Här kan du ändra ditt portal-lösenord.</div>
+<div>Ange nytt lösenord:</div>
 
 <c:if test="${not empty errorMessage}">
     <div class="portlet-msg-error">
