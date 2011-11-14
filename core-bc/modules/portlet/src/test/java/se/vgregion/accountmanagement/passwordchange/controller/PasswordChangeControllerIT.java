@@ -62,13 +62,6 @@ public class PasswordChangeControllerIT extends TestCase {
 
         System.out.println(result);
 
-//        result = "<html><head></head><body text=\"#0000\">Content</body></html>";
-//        JAXBContext jc = JAXBContext.newInstance(Html.class);
-//        Html html = (Html) jc.createUnmarshaller().unmarshal(new StringReader((String) result));
-//        System.out.println(html.getBody().getText());
-//        System.out.println(html.getBody().getValue());
-//        System.out.println(html.getHead());
-
         //verify it has been set in ldap
         PasswordChangeController passwordChangeController = new PasswordChangeController(simpleLdapService);
         passwordChangeController.verifyPasswordWasModified(userVgrId, passwordChangeController.encryptWithSha(
