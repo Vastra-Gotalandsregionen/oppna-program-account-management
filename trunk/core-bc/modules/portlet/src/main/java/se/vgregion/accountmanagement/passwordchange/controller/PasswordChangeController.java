@@ -144,25 +144,6 @@ public class PasswordChangeController {
 
             if (isDomino) {
                 response.setRenderParameter("failure", "dominoNotImplemented");
-                //keep commented until we get ok to set password in domino
-                /*Message message = new Message();
-                String queryString = String.format("Openagent&username=%s&password=%s", screenName, password);
-                HttpRequest httpRequest = new HttpRequest();
-                httpRequest.setQueryByString(queryString);
-                httpRequest.addBasicAuthentication(basicAuthUsername, basicAuthPassword);
-                //see se.vgregion.messagebus.EndpointMessageListener.createExchange() to see how the payload object is handled
-                message.setPayload(httpRequest);
-
-                //make call to change password
-                final int timeout = 10000;
-                Object reply = MessageBusUtil.sendSynchronousMessage(messagebusDestination, message, timeout);
-
-                if (reply == null) {
-                    throw new MessageBusException("No reply was given. Is destination [" + messagebusDestination
-                            + "] really configured?");
-                } else if (reply instanceof Throwable) {
-                    throw new MessageBusException((Throwable) reply);
-                }*/
             } else {
                 //no domino -> continue with setting password in LDAP only, directly
                 setPasswordInLdap(screenName, password);
@@ -172,17 +153,9 @@ public class PasswordChangeController {
 
             }
 
-//            verifyPasswordWasModified(screenName, encryptWithSha(password)); temporary - change when we implement
-// domino password change
-
-//            response.setRenderParameter("success", "success");
-
         } catch (PasswordChangeException ex) {
             model.addAttribute("errorMessage", ex.getMessage());
-        } /*catch (MessageBusException e) {
-            model.addAttribute("errorMessage", "Det gick inte att ändra lösenord. Försök igen senare.");
-            e.printStackTrace();
-        }*/
+        }
     }
 
     protected void validatePassword(String password, String passwordConfirm) throws PasswordChangeException {
