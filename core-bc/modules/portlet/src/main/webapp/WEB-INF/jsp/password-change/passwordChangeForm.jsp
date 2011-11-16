@@ -30,8 +30,6 @@
     <portlet:param name="action" value="changePassword"/>
 </portlet:actionURL>
 
-<div>Ange nytt lösenord:</div>
-
 <c:if test="${not empty errorMessage}">
     <div class="portlet-msg-error">
             ${errorMessage}
@@ -40,11 +38,11 @@
 
 <form id="changePasswordForm" action="${changePasswordAction}" method="POST">
     <div><b>VGR-ID:</b> ${vgrId}</div>
-    <div><aui:input type="password" label="Lösenord" inlineField="true" name="password"
+    <div><aui:input type="password" label="Nytt lösenord" inlineField="true" name="password"
                     helpMessage="Lösenord med både siffror och bokstäver och endast siffror och bokstäver. Minst
                     6 tecken."
                     autocomplete="off"/></div>
-    <div><aui:input type="password" label="Bekräfta lösenord" inlineField="true" name="passwordConfirm"
+    <div><aui:input type="password" label="Bekräfta nytt lösenord" inlineField="true" name="passwordConfirm"
                     autocomplete="off"/></div>
     <div><input type="submit" value="Ändra lösenord"/></div>
 </form>
