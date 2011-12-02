@@ -20,9 +20,14 @@
 package se.vgregion.accountmanagement.passwordchange.controller;
 
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.messaging.Message;
+import com.liferay.portal.kernel.messaging.MessageBusException;
+import com.liferay.portal.kernel.messaging.MessageBusUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.model.UserGroup;
 import com.liferay.portal.theme.ThemeDisplay;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -30,9 +35,12 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.portlet.bind.annotation.ActionMapping;
 import org.springframework.web.portlet.bind.annotation.RenderMapping;
+import se.vgregion.accountmanagement.domain.DominoResponse;
 import se.vgregion.accountmanagement.passwordchange.PasswordChangeException;
+import se.vgregion.http.HttpRequest;
 import se.vgregion.ldapservice.SimpleLdapServiceImpl;
 import se.vgregion.ldapservice.SimpleLdapUser;
+import se.vgregion.util.JaxbUtil;
 
 import javax.naming.NamingException;
 import javax.naming.directory.BasicAttribute;
@@ -43,6 +51,7 @@ import javax.portlet.ActionResponse;
 import javax.portlet.PortletRequest;
 import javax.portlet.RenderRequest;
 import javax.xml.bind.DatatypeConverter;
+import javax.xml.bind.JAXBException;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -56,15 +65,17 @@ import java.util.List;
 @RequestMapping("VIEW")
 public class PasswordChangeController {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(PasswordChangeController.class);
+
     @Autowired
     private SimpleLdapServiceImpl simpleLdapService;
 
     @Value("${changepassword.messagebus.destination}")
     private String messagebusDestination;
-    @Value("${basic_authentication.username}")
-    private String basicAuthUsername;
-    @Value("${basic_authentication.password}")
-    private String basicAuthPassword;
+    @Value("${admin_authentication.username}")
+    private String adminUsername;
+    @Value("${admin_authentication.password}")
+    private String adminPassword;
     @Value("${dominoUsersUserGroupName}")
     private String dominoUsersUserGroupName;
 
@@ -84,12 +95,6 @@ public class PasswordChangeController {
     @RenderMapping
     public String showPasswordChangeForm(RenderRequest request, Model model) throws PasswordChangeException {
 
-        boolean isDomino = isDominoUser(request);
-
-        if (isDomino) {
-            return "dominoNotImplemented";
-        }
-
         //lookup user's vgr id
         String screenName = lookupScreenName(request);
         if (screenName != null) {
@@ -97,7 +102,6 @@ public class PasswordChangeController {
         } else {
             model.addAttribute("errorMessage", "Kunde inte hitta ditt vgr-id.");
         }
-
 
         return "passwordChangeForm";
     }
@@ -122,11 +126,6 @@ public class PasswordChangeController {
         return "success";
     }
 
-    @RenderMapping(params = "failure=dominoNotImplemented")
-    public String showDominoNotImplementedPage() {
-        return "dominoNotImplemented";
-    }
-
     @ActionMapping(params = "action=changePassword")
     public void changePassword(ActionRequest request, ActionResponse response, Model model)
             throws PasswordChangeException {
@@ -143,18 +142,60 @@ public class PasswordChangeController {
             boolean isDomino = isDominoUser(request);
 
             if (isDomino) {
-                response.setRenderParameter("failure", "dominoNotImplemented");
+                setDominoAndLdapPassword(password, screenName);
+                try {
+                    verifyPasswordWasModified(screenName, encryptWithSha(password));
+                } catch (PasswordChangeException ex) {
+                    model.addAttribute("errorMessage", "Ditt lösenord har uppdaterats i Domino men inte i KIV.");
+                }
+                response.setRenderParameter("success", "success");
             } else {
                 //no domino -> continue with setting password in LDAP only, directly
                 setPasswordInLdap(screenName, password);
-                verifyPasswordWasModified(screenName, encryptWithSha(password)); //temporary? change when we
-                // implement domino password change
+                verifyPasswordWasModified(screenName, encryptWithSha(password));
                 response.setRenderParameter("success", "success");
-
             }
-
         } catch (PasswordChangeException ex) {
             model.addAttribute("errorMessage", ex.getMessage());
+            LOGGER.warn(ex.getMessage(), ex);
+        } catch (MessageBusException ex) {
+            model.addAttribute("errorMessage", "Det gick inte att ändra lösenord. Försök igen senare.");
+            LOGGER.error(ex.getMessage(), ex);
+        }
+    }
+
+    protected void setDominoAndLdapPassword(String password, String screenName) throws MessageBusException,
+            PasswordChangeException {
+        Message message = new Message();
+        String queryString = String.format("Openagent&username=%s&password=%s&adminUserName=%s"
+                + "&adminPassword=%s", screenName, password, adminUsername, adminPassword);
+        HttpRequest httpRequest = new HttpRequest();
+        httpRequest.setQueryByString(queryString);
+
+        //see se.vgregion.messagebus.EndpointMessageListener.createExchange() to see how the payload object
+        //is handled
+        message.setPayload(httpRequest);
+
+        //make call to change password
+        final int timeout = 10000;
+        Object reply = MessageBusUtil.sendSynchronousMessage(messagebusDestination, message, timeout);
+
+        if (reply == null) {
+            throw new MessageBusException("No reply was given. Is destination [" + messagebusDestination
+                    + "] really configured?");
+        } else if (reply instanceof String) {
+            try {
+                JaxbUtil jaxbUtil = new JaxbUtil(DominoResponse.class);
+                DominoResponse response = jaxbUtil.unmarshal((String) reply);
+                if (response.getStatuscode() != 1) { //1 == success
+                    throw new PasswordChangeException("Misslyckades att sätta lösenord i Domino. "
+                            + response.getStatusmessage());
+                }
+            } catch (JAXBException e) {
+                throw new PasswordChangeException(e);
+            }
+        } else if (reply instanceof Throwable) {
+            throw new MessageBusException((Throwable) reply);
         }
     }
 
@@ -230,14 +271,14 @@ public class PasswordChangeController {
     }
 
     protected void verifyPasswordWasModified(String uid, String encPassword) throws PasswordChangeException {
-        SimpleLdapUser ldapUser;//verify
+        SimpleLdapUser ldapUser;
         ldapUser = (SimpleLdapUser) simpleLdapService.getLdapUserByUid(uid);
         byte[] userPassword;
         try {
             userPassword = (byte[]) ldapUser.getAttributes(new String[]{"userPassword"}).get("userPassword").get();
             String passwordToVerify = new String(userPassword, "UTF-8");
             if (!encPassword.equals(passwordToVerify)) {
-                throw new PasswordChangeException("Lyckades inte byta lösenord.");
+                throw new PasswordChangeException("Lyckades inte byta lösenord i KIV.");
             }
         } catch (NamingException e) {
             throw new PasswordChangeException(e);

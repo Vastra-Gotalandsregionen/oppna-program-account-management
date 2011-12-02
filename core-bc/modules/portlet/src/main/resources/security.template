@@ -2,6 +2,6 @@
 BIND_DN=
 BIND_PW=
 
-#Basic authentication (to messagebus-changepassword-routes.xml)
-basic_authentication.username=
-basic_authentication.password=
+#Authentication (to messagebus-changepassword-routes.xml)
+admin_authentication.username=
+admin_authentication.password=
