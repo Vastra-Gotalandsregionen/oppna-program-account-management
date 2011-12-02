@@ -1,7 +1,7 @@
-The .crt files have been exported from https://regionkalender.proxy.vgregion.se/.
+The .crt files have been exported from https://activate.vgregion.se/.
 
-Then ThawtePremiumServerCA.crt was imported to ThawtePremiumServerCA.ts by:
+Then GlobalSignDomainValidationCA.crt was imported to GlobalSignDomainValidationCA.ts by:
 
-keytool -importcert -alias ThawtePremiumServerCA -keystore ThawtePremiumServerCA.ts -file ThawtePremiumServerCA.crt
+keytool -importcert -alias GlobalSignDomainValidationCA -keystore GlobalSignDomainValidationCA.ts -file GlobalSignDomainValidationCA.crt
 
 password to keystore: changeit

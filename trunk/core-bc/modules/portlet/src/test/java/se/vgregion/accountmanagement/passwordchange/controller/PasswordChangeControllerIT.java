@@ -13,11 +13,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import se.vgregion.accountmanagement.domain.DominoResponse;
 import se.vgregion.accountmanagement.passwordchange.PasswordChangeException;
 import se.vgregion.http.HttpRequest;
 import se.vgregion.ldapservice.SimpleLdapServiceImpl;
+import se.vgregion.ldapservice.SimpleLdapUser;
+import se.vgregion.util.JaxbUtil;
 
+import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
+import java.io.StringReader;
 import java.util.Random;
 
 /**
@@ -35,10 +40,10 @@ public class PasswordChangeControllerIT extends TestCase {
     //looks up the properties via Spring's PropertyPlaceholder
     @Value("${changepassword.messagebus.destination}")
     private String messagebusDestination;
-    @Value("${basic_authentication.username}")
-    private String basicUserName;
-    @Value("${basic_authentication.password}")
-    private String basicUserPassword;
+    @Value("${admin_authentication.username}")
+    private String adminUserName;
+    @Value("${admin_authentication.password}")
+    private String adminUserPassword;
 
     @Autowired
     private SimpleLdapServiceImpl simpleLdapService;
@@ -48,11 +53,11 @@ public class PasswordChangeControllerIT extends TestCase {
     public void setDominoPassword() throws MessageBusException, PasswordChangeException, JAXBException {
         Message message = new Message();
         String userVgrId = "xxtst1";
-        String newUserPassword = "password2";
-        String queryString = String.format("Openagent&username=%s&password=%s", userVgrId, newUserPassword);
+        String newUserPassword = "password3";
+        String queryString = String.format("Openagent&username=%s&password=%s&adminUserName=%s&adminPassword=%s",
+                userVgrId, newUserPassword, adminUserName, adminUserPassword);
         HttpRequest httpRequest = new HttpRequest();
         httpRequest.setQueryByString(queryString);
-        httpRequest.addBasicAuthentication(basicUserName, basicUserPassword);
         //see se.vgregion.messagebus.EndpointMessageListener.createExchange() to see how the payload object is handled
         message.setPayload(httpRequest);
 
@@ -62,10 +67,28 @@ public class PasswordChangeControllerIT extends TestCase {
 
         System.out.println(result);
 
+        if (result instanceof String) {
+            JaxbUtil jaxbUtil = new JaxbUtil(DominoResponse.class);
+            DominoResponse response = jaxbUtil.unmarshal((String) result);
+
+            if (response.getStatuscode() != 1) {
+                throw new PasswordChangeException("Failed to change password in Domino.");
+            }
+        } else {
+            fail();
+        }
+
         //verify it has been set in ldap
         PasswordChangeController passwordChangeController = new PasswordChangeController(simpleLdapService);
         passwordChangeController.verifyPasswordWasModified(userVgrId, passwordChangeController.encryptWithSha(
                 newUserPassword));
+    }
+
+    @Test
+    public void testLdapSearch() {
+        SimpleLdapUser ldapUser = (SimpleLdapUser) simpleLdapService.getLdapUserByUid("", "ex_teste");
+
+        assertNotNull(ldapUser);
     }
 
     private DefaultSynchronousMessageSender createMessageSender() {
