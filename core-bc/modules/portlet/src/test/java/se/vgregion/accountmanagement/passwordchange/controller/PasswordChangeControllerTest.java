@@ -22,6 +22,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.ldap.core.LdapOperations;
 import org.springframework.ldap.core.simple.SimpleLdapTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -55,6 +56,9 @@ public class PasswordChangeControllerTest extends TestCase {
 
     @InjectMocks
     private PasswordChangeController controller = new PasswordChangeController();
+
+    @Value("${ldap.personnel.base}")
+    private String base;
 
     private String dominoUsersUserGroupName = "DominoUsers";
 
@@ -271,7 +275,7 @@ public class PasswordChangeControllerTest extends TestCase {
         byte[] digest2 = sha1Digest.digest(newPassword.getBytes("UTF-8"));
         String expecedEncryptedPassword = "{SHA}" + DatatypeConverter.printBase64Binary(digest2);
 
-        SimpleLdapUser ldapUser = (SimpleLdapUser) simpleLdapService.getLdapUserByUid("ex_teste");
+        SimpleLdapUser ldapUser = (SimpleLdapUser) simpleLdapService.getLdapUserByUid(base, "ex_teste");
         byte[] userPassword = (byte[]) ldapUser.getAttributes(new String[]{"userPassword"}).get("userPassword").get();
         String encryptedPassword2 = new String(userPassword, "UTF-8");
 
@@ -281,7 +285,7 @@ public class PasswordChangeControllerTest extends TestCase {
     private void setupUserInMockLdapService(String userId, String encryptedPassword) {
         SimpleLdapUser user = new SimpleLdapUser("anyString");
         user.setAttributeValue("userPassword", encryptedPassword.getBytes());
-        when(simpleLdapService.getLdapUserByUid(userId)).thenReturn(user);
+        when(simpleLdapService.getLdapUserByUid(anyString(), eq(userId))).thenReturn(user);
         SimpleLdapTemplate simpleLdapTemplate = mock(SimpleLdapTemplate.class);
         LdapOperations ldapOperations = mock(LdapOperations.class);
         when(simpleLdapTemplate.getLdapOperations()).thenReturn(ldapOperations);
