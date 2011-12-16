@@ -28,7 +28,7 @@
   <!-- LDAP configuration -->
   <bean id="contextSource" class="org.springframework.ldap.core.support.LdapContextSource">
     <property name="url" value="${BIND_URL}"/>
-    <property name="base" value="${BASE}"/>
+    <!--<property name="base" value="${BASE}"/>-->
     <property name="userDn" value="${BIND_DN}"/>
     <property name="password" value="${BIND_PW}"/>
   </bean>

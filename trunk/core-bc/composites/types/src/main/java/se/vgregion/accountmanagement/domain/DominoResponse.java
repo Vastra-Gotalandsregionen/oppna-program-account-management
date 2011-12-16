@@ -11,9 +11,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class DominoResponse {
 
     @XmlElement(name = "statuscode", required = true)
-    protected Integer statuscode;
+    private Integer statuscode;
     @XmlElement(name = "statusmessage", required = true)
-    protected String statusmessage;
+    private String statusmessage;
 
     /**
      * Gets the value of the statuscode property.

@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.util.ReflectionTestUtils;
 import se.vgregion.accountmanagement.domain.DominoResponse;
 import se.vgregion.accountmanagement.passwordchange.PasswordChangeException;
 import se.vgregion.http.HttpRequest;
@@ -44,6 +45,8 @@ public class PasswordChangeControllerIT extends TestCase {
     private String adminUserName;
     @Value("${admin_authentication.password}")
     private String adminUserPassword;
+    @Value("${ldap.personnel.base}")
+    private String base;
 
     @Autowired
     private SimpleLdapServiceImpl simpleLdapService;
@@ -53,7 +56,7 @@ public class PasswordChangeControllerIT extends TestCase {
     public void setDominoPassword() throws MessageBusException, PasswordChangeException, JAXBException {
         Message message = new Message();
         String userVgrId = "xxtst1";
-        String newUserPassword = "password3";
+        String newUserPassword = "password1";
         String queryString = String.format("Openagent&username=%s&password=%s&adminUserName=%s&adminPassword=%s",
                 userVgrId, newUserPassword, adminUserName, adminUserPassword);
         HttpRequest httpRequest = new HttpRequest();
@@ -80,13 +83,14 @@ public class PasswordChangeControllerIT extends TestCase {
 
         //verify it has been set in ldap
         PasswordChangeController passwordChangeController = new PasswordChangeController(simpleLdapService);
+        ReflectionTestUtils.setField(passwordChangeController, "base", base);
         passwordChangeController.verifyPasswordWasModified(userVgrId, passwordChangeController.encryptWithSha(
                 newUserPassword));
     }
 
     @Test
     public void testLdapSearch() {
-        SimpleLdapUser ldapUser = (SimpleLdapUser) simpleLdapService.getLdapUserByUid("", "ex_teste");
+        SimpleLdapUser ldapUser = (SimpleLdapUser) simpleLdapService.getLdapUserByUid(base, "susro3");
 
         assertNotNull(ldapUser);
     }

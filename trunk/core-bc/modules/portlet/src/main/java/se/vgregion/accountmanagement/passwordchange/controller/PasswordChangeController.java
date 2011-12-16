@@ -78,6 +78,8 @@ public class PasswordChangeController {
     private String adminPassword;
     @Value("${dominoUsersUserGroupName}")
     private String dominoUsersUserGroupName;
+    @Value("${ldap.personnel.base}")
+    private String base;
 
 
     public PasswordChangeController() {
@@ -140,6 +142,8 @@ public class PasswordChangeController {
             validatePassword(password, passwordConfirm);
 
             boolean isDomino = isDominoUser(request);
+
+            LOGGER.info("Changing password for " + screenName + ". IsDomino=" + isDomino);
 
             if (isDomino) {
                 setDominoAndLdapPassword(password, screenName);
@@ -241,7 +245,7 @@ public class PasswordChangeController {
     }
 
     protected void setPasswordInLdap(String uid, String password) throws PasswordChangeException {
-        SimpleLdapUser ldapUser = (SimpleLdapUser) simpleLdapService.getLdapUserByUid(uid);
+        SimpleLdapUser ldapUser = (SimpleLdapUser) simpleLdapService.getLdapUserByUid(base, uid);
 
         if (ldapUser == null) {
             throw new PasswordChangeException("Din användare kunde inte hittas i katalogservern.");
@@ -272,7 +276,7 @@ public class PasswordChangeController {
 
     protected void verifyPasswordWasModified(String uid, String encPassword) throws PasswordChangeException {
         SimpleLdapUser ldapUser;
-        ldapUser = (SimpleLdapUser) simpleLdapService.getLdapUserByUid(uid);
+        ldapUser = (SimpleLdapUser) simpleLdapService.getLdapUserByUid(base, uid);
         byte[] userPassword;
         try {
             userPassword = (byte[]) ldapUser.getAttributes(new String[]{"userPassword"}).get("userPassword").get();

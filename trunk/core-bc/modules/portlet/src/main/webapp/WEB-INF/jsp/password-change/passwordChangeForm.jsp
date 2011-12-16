@@ -36,6 +36,12 @@
     </div>
 </c:if>
 
+<p>
+    Lösenordet som du har till Regionportalen är samma som det du fått för att nå e-post, kalender mm via webben.
+    När du ändrar ditt lösenordet kommer ändringen genomföras både för webbmailen och Regionportalen. Det kan ta
+    upp till 15 minuter innan ändringen av lösenordet slår igenom.
+</p>
+
 <form id="changePasswordForm" action="${changePasswordAction}" method="POST">
     <div><b>VGR-ID:</b> ${vgrId}</div>
     <div><aui:input type="password" label="Nytt lösenord" inlineField="true" name="password"
