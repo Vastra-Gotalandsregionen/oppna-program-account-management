@@ -32,7 +32,7 @@
 
 <c:if test="${not empty errorMessage}">
     <div class="portlet-msg-error">
-            ${errorMessage}
+        ${errorMessage}
     </div>
 </c:if>
 
