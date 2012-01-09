@@ -28,7 +28,11 @@ public class PasswordChangeException extends Exception {
         super(message);
     }
 
-    public PasswordChangeException(Throwable e) {
-        super(e);
+    public PasswordChangeException(Throwable cause) {
+        super(cause);
+    }
+
+    public PasswordChangeException(String message, Throwable cause) {
+        super(message, cause);
     }
 }
