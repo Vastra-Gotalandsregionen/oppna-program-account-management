@@ -13,6 +13,7 @@ Generation time : 2011-10-18 13:49:06 CEST
     <groupId>se.vgregion.oppna-program-account-management</groupId>
     <artifactId>oppna-program-account-management-core-bc</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <relativePath>../../pom.xml</relativePath>
   </parent>
   <groupId>se.vgregion.oppna-program-account-management</groupId>
   <artifactId>oppna-program-account-management-core-bc-module-portlet</artifactId>
@@ -37,12 +38,6 @@ Generation time : 2011-10-18 13:49:06 CEST
     
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>oppna-program-account-management-core-bc-composite-webcomp</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>${project.groupId}</groupId>
       <artifactId>oppna-program-account-management-core-bc-composite-camel</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -51,6 +46,12 @@ Generation time : 2011-10-18 13:49:06 CEST
       <groupId>${project.groupId}</groupId>
       <artifactId>oppna-program-account-management-core-bc-composite-types</artifactId>
       <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>se.vgregion.cs-iframe</groupId>
+      <artifactId>cs-iframe-core-composite-svc</artifactId>
+      <version>2.1</version>
     </dependency>
 
     <dependency>

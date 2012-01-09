@@ -40,6 +40,8 @@ import se.vgregion.accountmanagement.passwordchange.PasswordChangeException;
 import se.vgregion.http.HttpRequest;
 import se.vgregion.ldapservice.SimpleLdapServiceImpl;
 import se.vgregion.ldapservice.SimpleLdapUser;
+import se.vgregion.portal.cs.domain.UserSiteCredential;
+import se.vgregion.portal.cs.service.CredentialService;
 import se.vgregion.util.JaxbUtil;
 
 import javax.naming.NamingException;
@@ -69,6 +71,8 @@ public class PasswordChangeController {
 
     @Autowired
     private SimpleLdapServiceImpl simpleLdapService;
+    @Autowired
+    private CredentialService credentialService;
 
     @Value("${changepassword.messagebus.destination}")
     private String messagebusDestination;
@@ -146,19 +150,14 @@ public class PasswordChangeController {
             LOGGER.info("Changing password for " + screenName + ". IsDomino=" + isDomino);
 
             if (isDomino) {
-                setDominoAndLdapPassword(password, screenName);
-                try {
-                    verifyPasswordWasModified(screenName, encryptWithSha(password));
-                } catch (PasswordChangeException ex) {
-                    model.addAttribute("errorMessage", "Ditt lösenord har uppdaterats i Domino men inte i KIV.");
-                }
-                response.setRenderParameter("success", "success");
+                updateDomino(screenName, password);
             } else {
                 //no domino -> continue with setting password in LDAP only, directly
                 setPasswordInLdap(screenName, password);
                 verifyPasswordWasModified(screenName, encryptWithSha(password));
-                response.setRenderParameter("success", "success");
             }
+            updateCredentialStore(password, screenName);
+            response.setRenderParameter("success", "success");
         } catch (PasswordChangeException ex) {
             model.addAttribute("errorMessage", ex.getMessage());
             LOGGER.warn(ex.getMessage(), ex);
@@ -166,6 +165,21 @@ public class PasswordChangeController {
             model.addAttribute("errorMessage", "Det gick inte att ändra lösenord. Försök igen senare.");
             LOGGER.error(ex.getMessage(), ex);
         }
+    }
+
+    private void updateDomino(String screenName, String password) throws MessageBusException, PasswordChangeException {
+        setDominoAndLdapPassword(password, screenName);
+        try {
+            verifyPasswordWasModified(screenName, encryptWithSha(password));
+        } catch (PasswordChangeException ex) {
+            throw new PasswordChangeException("Ditt lösenord har uppdaterats i Domino men inte i KIV.", ex);
+        }
+    }
+
+    private void updateCredentialStore(String password, String screenName) {
+        UserSiteCredential credential = credentialService.getUserSiteCredential(screenName, "iNotes");
+        credential.setSitePassword(password);
+        credentialService.save(credential);
     }
 
     protected void setDominoAndLdapPassword(String password, String screenName) throws MessageBusException,
