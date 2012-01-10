@@ -60,9 +60,18 @@
 
   <bean id="credentialService" class="se.vgregion.portal.cs.service.CredentialServiceImpl"/>
   <bean id="userSiteCredentialRepository" class="se.vgregion.portal.cs.domain.persistence.jpa.JpaUserSiteCredentialRepository"/>
-  <bean id="siteKeyRepository" class="se.vgregion.portal.cs.domain.persistence.jpa.JpaSiteKeyRepository" />
+  <bean id="siteKeyRepository" class="se.vgregion.portal.cs.domain.persistence.jpa.JpaSiteKeyRepository"/>
   <bean id="cryptoUtil" class="se.vgregion.portal.cs.util.AesCtrCryptoUtilImpl">
     <constructor-arg value="${user.home}/.cs/cv.key"/>
+  </bean>
+
+  <bean id="cacheManager" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
+    <property name="configLocation" value="classpath:ehcache.xml"/>
+  </bean>
+
+  <bean id="passwordCache" class="org.springframework.cache.ehcache.EhCacheFactoryBean">
+    <property name="cacheManager" ref="cacheManager"/>
+    <property name="cacheName" value="passwordCache"/>
   </bean>
 
 </beans>

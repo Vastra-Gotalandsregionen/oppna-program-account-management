@@ -41,17 +41,59 @@
     När du ändrar ditt lösenordet kommer ändringen genomföras både för webbmailen och Regionportalen.
 </p>
 
-<p>
-    <b>Det kan ta upp till 15 minuter innan ändringen av lösenordet slår igenom.</b>
+<p class="portlet-msg-info">
+    Det kan ta upp till 15 minuter innan ändringen av lösenordet slår igenom.
 </p>
 
-<form id="changePasswordForm" action="${changePasswordAction}" method="POST">
-    <div><b>VGR-ID:</b> ${vgrId}</div>
-    <div><aui:input type="password" label="Nytt lösenord" inlineField="true" name="password"
-                    helpMessage="Lösenord med både siffror och bokstäver och endast siffror och bokstäver. Minst
-                    6 tecken."
-                    autocomplete="off"/></div>
-    <div><aui:input type="password" label="Bekräfta nytt lösenord" inlineField="true" name="passwordConfirm"
-                    autocomplete="off"/></div>
-    <div><input type="submit" value="Ändra lösenord"/></div>
-</form>
+<div><b>VGR-ID:</b> ${vgrId}</div>
+
+<c:choose>
+    <c:when test="${not empty secondsElapsed}">
+        <div class="portlet-msg-info">
+            Du kan inte byta lösenord förrän om <span id="countDown"></span> minuter.
+        </div>
+    </c:when>
+    <c:otherwise>
+        <form id="changePasswordForm" action="${changePasswordAction}" method="POST">
+
+            <div><aui:input type="password" label="Nytt lösenord" inlineField="true" name="password"
+                            helpMessage="Lösenord med både siffror och bokstäver och endast siffror och bokstäver. Minst 6 tecken."
+                            autocomplete="off"/></div>
+            <div><aui:input type="password" label="Bekräfta nytt lösenord" inlineField="true" name="passwordConfirm"
+                            autocomplete="off"/></div>
+            <div><input type="submit" value="Ändra lösenord"/></div>
+        </form>
+    </c:otherwise>
+</c:choose>
+
+<c:if test="${not empty secondsElapsed}">
+    <script type="text/javascript">
+        var elapsedSeconds = "${secondsElapsed}";
+
+        var timer = document.getElementById("countDown");
+
+        UpdateTimer()
+        window.setTimeout("Tick()", 1000);
+
+        function Tick() {
+            elapsedSeconds++;
+            UpdateTimer()
+            window.setTimeout("Tick()", 1000);
+        }
+
+        function UpdateTimer() {
+            var secondsLeft = 900 - elapsedSeconds;
+
+            if (secondsLeft <= 0) {
+                window.location.reload();
+            }
+
+            var minutes = Math.floor((secondsLeft) / 60);
+            var seconds = secondsLeft % 60;
+            if (seconds < 10) {
+                seconds = "0" + seconds;
+            }
+            timer.innerHTML = minutes + ":" + seconds;
+        }
+    </script>
+</c:if>

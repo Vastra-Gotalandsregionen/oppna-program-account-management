@@ -1,4 +1,4 @@
-<%--
+<!--
 
     Copyright 2010 Västra Götalandsregionen
 
@@ -17,19 +17,23 @@
       Boston, MA 02111-1307  USA
 
 
---%>
+-->
 
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet" %>
+<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nonamespaceschemalocation="http://ehcache.org/ehcache.xsd">
 
-<portlet:renderURL var="returnUrl">
-</portlet:renderURL>
+  <defaultCache maxElementsInMemory="1000"
+                eternal="false"
+                timeToIdleSeconds="900"
+                timeToLiveSeconds="900"
+                memoryStoreEvictionPolicy="FIFO" />
 
-<div class="portlet-msg-success">
-    Ditt lösenord håller på att ändras.
-    <br/>
-    <br/>
-    Det kan ta upp till 15 minuter innan ändringen av lösenordet slår igenom.
+  <!-- Cache to hold password change-time objects -->
+  <cache name="passwordCache"
+         maxElementsInMemory="500"
+         eternal="false"
+         overflowToDisk="false"
+         timeToIdleSeconds="900"
+         timeToLiveSeconds="900"
+         memoryStoreEvictionPolicy="FIFO" />
 
-    <a href="${returnUrl}">Tillbaka</a>
-</div>
+</ehcache>
