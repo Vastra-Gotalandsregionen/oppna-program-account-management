@@ -12,6 +12,7 @@ import com.liferay.portal.model.User;
 import com.liferay.portal.model.UserGroup;
 import com.liferay.portal.theme.ThemeDisplay;
 import junit.framework.TestCase;
+import net.sf.ehcache.Ehcache;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -59,6 +60,8 @@ public class PasswordChangeControllerTest extends TestCase {
     private SimpleLdapServiceImpl simpleLdapService; //this is injected in the @InjectMocks-annotated instance
     @Mock
     private CredentialService credentialService;
+    @Mock
+    private Ehcache ehcache;
 
     @InjectMocks
     private PasswordChangeController controller = new PasswordChangeController();

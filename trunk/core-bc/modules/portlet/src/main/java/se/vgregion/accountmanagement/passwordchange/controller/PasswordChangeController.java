@@ -26,6 +26,8 @@ import com.liferay.portal.kernel.messaging.MessageBusUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.model.UserGroup;
 import com.liferay.portal.theme.ThemeDisplay;
+import net.sf.ehcache.Ehcache;
+import net.sf.ehcache.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +59,7 @@ import javax.xml.bind.JAXBException;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -68,6 +71,9 @@ import java.util.List;
 public class PasswordChangeController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PasswordChangeController.class);
+    
+    @Autowired
+    private Ehcache ehcache;
 
     @Autowired
     private SimpleLdapServiceImpl simpleLdapService;
@@ -108,6 +114,12 @@ public class PasswordChangeController {
         } else {
             model.addAttribute("errorMessage", "Kunde inte hitta ditt vgr-id.");
         }
+
+        Element element = ehcache.get(screenName);
+        if (element != null) {
+            long secondsElapsed = (System.currentTimeMillis() - ((Date) element.getValue()).getTime()) / 1000;
+            model.addAttribute("secondsElapsed", secondsElapsed);
+        }        
 
         return "passwordChangeForm";
     }
@@ -151,6 +163,8 @@ public class PasswordChangeController {
 
             if (isDomino) {
                 updateDomino(screenName, password);
+                //place in cache after success, since the password change may take considerable time
+                ehcache.put(new Element(screenName, new Date()));
             } else {
                 //no domino -> continue with setting password in LDAP only, directly
                 setPasswordInLdap(screenName, password);
