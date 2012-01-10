@@ -43,6 +43,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.mockito.Mockito.*;
@@ -101,15 +102,10 @@ public class PasswordChangeControllerTest extends TestCase {
     //This tests the flow of the changePassword method and verifies that "success" is set on the response. It does
     //not verify that the password is set.
     @Test
-    public void testChangePassword() throws Exception {
+    public void testChangePasswordDominoUser() throws Exception {
 
         //initial setup
-        ActionRequest request = prepareForIsDominoUserMethod(false);
-        ThemeDisplay themeDisplay = new ThemeDisplay();
-        User user = mock(User.class);
-        when(user.getScreenName()).thenReturn("ex_teste");
-        themeDisplay.setUser(user);
-        when(request.getAttribute(WebKeys.THEME_DISPLAY)).thenReturn(themeDisplay);
+        ActionRequest request = prepareForIsDominoUserMethod(true);
 
         String userId = "ex_teste";
         MessageDigest sha = MessageDigest.getInstance("SHA");
@@ -129,11 +125,42 @@ public class PasswordChangeControllerTest extends TestCase {
                 .thenAnswer(new Answer<String>() { //Answer is chosen since you can throw exceptions
                     @Override
                     public String answer(InvocationOnMock invocation) throws Throwable {
-                        return "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>" +
-                                "<xmlResponse>Test</xmlResponse>";
+                        return "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                                "<response>\n" +
+                                "<statuscode>1</statuscode>\n" +
+                                "<statusmessage>Lösenordet uppdaterades för xxtst1</statusmessage>\n" +
+                                "</response>";
                     }
                 });
         ReflectionTestUtils.setField(controller, "messagebusDestination", messagebusDestination);
+        ActionResponse response = mock(ActionResponse.class);
+        when(request.getParameter("password")).thenReturn(newPassword);
+        when(request.getParameter("passwordConfirm")).thenReturn(newPassword);
+
+        //Do
+        controller.changePassword(request, response, mock(Model.class));
+
+        //Verify
+        verify(response).setRenderParameter(eq("success"), anyString());
+        verify(credentialService).save(any(UserSiteCredential.class));
+    }
+
+    @Test
+    public void testChangePasswordNonDominoUser() throws Exception {
+
+        //initial setup
+        ActionRequest request = prepareForIsDominoUserMethod(false);
+
+        String userId = "ex_teste";
+        MessageDigest sha = MessageDigest.getInstance("SHA");
+        String newPassword = "123abc";
+
+        byte[] digest = sha.digest(newPassword.getBytes("UTF-8"));
+        String encryptedPassword = "{SHA}" + DatatypeConverter.printBase64Binary(digest);
+
+        setupUserInMockLdapService(userId, encryptedPassword);
+
+        //Given
         ActionResponse response = mock(ActionResponse.class);
         when(request.getParameter("password")).thenReturn(newPassword);
         when(request.getParameter("passwordConfirm")).thenReturn(newPassword);
@@ -150,23 +177,22 @@ public class PasswordChangeControllerTest extends TestCase {
         ActionRequest request = mock(ActionRequest.class);
         ThemeDisplay themeDisplay = new ThemeDisplay();
         User user = mock(User.class);
+        when(user.getScreenName()).thenReturn("ex_teste");
         themeDisplay.setUser(user);
         when(request.getAttribute(WebKeys.THEME_DISPLAY)).thenReturn(themeDisplay);
 
         //add a role
         if (isDomino) {
-            ArrayList<Role> roles = new ArrayList<Role>();
-            Role role1 = mock(Role.class);
-            when(role1.getTitle()).thenReturn("Domino");
-            roles.add(role1);
-            when(user.getRoles()).thenReturn(roles);
+            UserGroup userGroup = mock(UserGroup.class);
+            when(userGroup.getName()).thenReturn("DominoUsers");
+            List<UserGroup> userGroups = Arrays.asList(userGroup);
+            when(user.getUserGroups()).thenReturn(userGroups);
         }
         return request;
     }
 
-    //This test verifies that "failure" is set on hte response when no reply is returned from the messageBus.
+    //This test verifies that "failure" is set on the response when no reply is returned from the messageBus.
     @Test
-    @Ignore //until we implement password change for domino users
     public void testChangePasswordNoReply() throws Exception {
 
         //initial setup
@@ -188,12 +214,13 @@ public class PasswordChangeControllerTest extends TestCase {
         ActionResponse response = mock(ActionResponse.class);
         when(request.getParameter("password")).thenReturn("123abc");
         when(request.getParameter("passwordConfirm")).thenReturn("123abc");
+        Model model = mock(Model.class);
 
         //Do
-        controller.changePassword(request, response, mock(Model.class));
+        controller.changePassword(request, response, model);
 
         //Verify
-        verify(response).setRenderParameter(eq("failure"), anyString());
+        verify(model).addAttribute(eq("errorMessage"), anyString());
     }
 
     //This tests the flow when two non-equal passwords are entered. A failure should result.
