@@ -12,6 +12,7 @@ import com.liferay.portal.model.User;
 import com.liferay.portal.model.UserGroup;
 import com.liferay.portal.theme.ThemeDisplay;
 import junit.framework.TestCase;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,6 +31,8 @@ import org.springframework.ui.Model;
 import se.vgregion.accountmanagement.passwordchange.PasswordChangeException;
 import se.vgregion.ldapservice.SimpleLdapServiceImpl;
 import se.vgregion.ldapservice.SimpleLdapUser;
+import se.vgregion.portal.cs.domain.UserSiteCredential;
+import se.vgregion.portal.cs.service.CredentialService;
 
 import javax.naming.NamingException;
 import javax.portlet.ActionRequest;
@@ -53,6 +56,8 @@ public class PasswordChangeControllerTest extends TestCase {
 
     @Mock
     private SimpleLdapServiceImpl simpleLdapService; //this is injected in the @InjectMocks-annotated instance
+    @Mock
+    private CredentialService credentialService;
 
     @InjectMocks
     private PasswordChangeController controller = new PasswordChangeController();
@@ -64,6 +69,11 @@ public class PasswordChangeControllerTest extends TestCase {
 
     {
         controller.setDominoUsersUserGroupName(dominoUsersUserGroupName);
+    }
+    
+    @Before
+    public void setup() {
+        when(credentialService.getUserSiteCredential(anyString(), eq("iNotes"))).thenReturn(new UserSiteCredential());
     }
 
     @Test
@@ -133,6 +143,7 @@ public class PasswordChangeControllerTest extends TestCase {
 
         //Verify
         verify(response).setRenderParameter(eq("success"), anyString());
+        verify(credentialService).save(any(UserSiteCredential.class));
     }
 
     private ActionRequest prepareForIsDominoUserMethod(boolean isDomino) throws PortalException, SystemException {

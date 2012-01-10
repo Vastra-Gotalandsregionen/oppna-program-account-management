@@ -62,7 +62,7 @@
   <bean id="userSiteCredentialRepository" class="se.vgregion.portal.cs.domain.persistence.jpa.JpaUserSiteCredentialRepository"/>
   <bean id="siteKeyRepository" class="se.vgregion.portal.cs.domain.persistence.jpa.JpaSiteKeyRepository" />
   <bean id="cryptoUtil" class="se.vgregion.portal.cs.util.AesCtrCryptoUtilImpl">
-    <constructor-arg value="classpath*:security/cv.key"/>
+    <constructor-arg value="${user.home}/.cs/cv.key"/>
   </bean>
 
 </beans>

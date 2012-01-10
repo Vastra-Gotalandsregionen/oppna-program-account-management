@@ -82,7 +82,7 @@ public class PasswordChangeController {
     private String adminPassword;
     @Value("${dominoUsersUserGroupName}")
     private String dominoUsersUserGroupName;
-    @Value("${ldap.personnel.base}")
+    @Value("${BASE}")
     private String base;
 
 
@@ -178,7 +178,11 @@ public class PasswordChangeController {
 
     private void updateCredentialStore(String password, String screenName) {
         UserSiteCredential credential = credentialService.getUserSiteCredential(screenName, "iNotes");
+        if (credential == null) {
+            credential = new UserSiteCredential(screenName, "iNotes");
+        }
         credential.setSitePassword(password);
+        credential.setSiteUser(screenName);
         credentialService.save(credential);
     }
 
