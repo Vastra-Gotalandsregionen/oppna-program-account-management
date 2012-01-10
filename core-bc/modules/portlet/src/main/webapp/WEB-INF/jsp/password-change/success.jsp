@@ -26,5 +26,11 @@
 </portlet:renderURL>
 
 <div class="portlet-msg-success">
-    Ditt lösenord är nu ändrat. <a href="${returnUrl}">Tillbaka</a>
+    Ditt lösenord är nu ändrat.
+
+    <p>
+        <b>Det kan ta upp till 15 minuter innan ändringen av lösenordet slår igenom.</b>
+    </p>
+
+    <a href="${returnUrl}">Tillbaka</a>
 </div>

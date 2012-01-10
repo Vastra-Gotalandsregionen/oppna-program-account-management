@@ -24,7 +24,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://liferay.com/tld/aui" prefix="aui" %>
 
-<link href="${pageContext.request.contextPath}/css/style.css" type="text/css" rel="stylesheet" />
+<link href="${pageContext.request.contextPath}/css/style.css" type="text/css" rel="stylesheet"/>
 
 <portlet:actionURL var="changePasswordAction">
     <portlet:param name="action" value="changePassword"/>
@@ -32,14 +32,17 @@
 
 <c:if test="${not empty errorMessage}">
     <div class="portlet-msg-error">
-        ${errorMessage}
+            ${errorMessage}
     </div>
 </c:if>
 
 <p>
     Lösenordet som du har till Regionportalen är samma som det du fått för att nå e-post, kalender mm via webben.
-    När du ändrar ditt lösenordet kommer ändringen genomföras både för webbmailen och Regionportalen. Det kan ta
-    upp till 15 minuter innan ändringen av lösenordet slår igenom.
+    När du ändrar ditt lösenordet kommer ändringen genomföras både för webbmailen och Regionportalen.
+</p>
+
+<p>
+    <b>Det kan ta upp till 15 minuter innan ändringen av lösenordet slår igenom.</b>
 </p>
 
 <form id="changePasswordForm" action="${changePasswordAction}" method="POST">
