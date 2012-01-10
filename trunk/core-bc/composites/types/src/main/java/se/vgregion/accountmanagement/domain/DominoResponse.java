@@ -6,6 +6,9 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+/**
+ * JAXB entity representing a response from the Domino service.
+ */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "response")
 public class DominoResponse {
@@ -17,11 +20,11 @@ public class DominoResponse {
 
     /**
      * Gets the value of the statuscode property.
-     * 
+     *
      * @return
      *     possible object is
      *     {@link String }
-     *     
+     *
      */
     public Integer getStatuscode() {
         return statuscode;

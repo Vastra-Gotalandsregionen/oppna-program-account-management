@@ -61,8 +61,11 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
+ * Controller class backing up the password change portlet.
+ *
  * @author Patrik Bergström
  */
 
@@ -71,7 +74,7 @@ import java.util.List;
 public class PasswordChangeController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PasswordChangeController.class);
-    
+
     @Autowired
     private Ehcache ehcache;
 
@@ -91,11 +94,18 @@ public class PasswordChangeController {
     @Value("${BASE}")
     private String base;
 
-
+    /**
+     * Constructor.
+     */
     public PasswordChangeController() {
 
     }
 
+    /**
+     * Constructor.
+     *
+     * @param simpleLdapService simpleLdapService
+     */
     public PasswordChangeController(SimpleLdapServiceImpl simpleLdapService) {
         this.simpleLdapService = simpleLdapService;
     }
@@ -104,6 +114,14 @@ public class PasswordChangeController {
         this.dominoUsersUserGroupName = dominoUsersUserGroupName;
     }
 
+    /**
+     * Handler method called by Spring.
+     *
+     * @param request request
+     * @param model   model
+     * @return the passwordChangeForm view
+     * @throws PasswordChangeException PasswordChangeException
+     */
     @RenderMapping
     public String showPasswordChangeForm(RenderRequest request, Model model) throws PasswordChangeException {
 
@@ -117,9 +135,10 @@ public class PasswordChangeController {
 
         Element element = ehcache.get(screenName);
         if (element != null) {
-            long secondsElapsed = (System.currentTimeMillis() - ((Date) element.getValue()).getTime()) / 1000;
+            final int i = 1000;
+            long secondsElapsed = (System.currentTimeMillis() - ((Date) element.getValue()).getTime()) / i;
             model.addAttribute("secondsElapsed", secondsElapsed);
-        }        
+        }
 
         return "passwordChangeForm";
     }
@@ -139,11 +158,26 @@ public class PasswordChangeController {
         }
     }
 
+    /**
+     * Handler method called by Spring.
+     *
+     * @return the success view
+     */
     @RenderMapping(params = "success")
     public String showSuccessPage() {
         return "success";
     }
 
+    /**
+     * Handler method called by Spring. It changes the user's password. If the user is a domino user a web service will
+     * be called which will update the password in both the LDAP catalog and Domino. If the user is not a domino user a
+     * direct call to the LDAP will be made to update the password.
+     *
+     * @param request  request
+     * @param response response
+     * @param model    model
+     * @throws PasswordChangeException PasswordChangeException
+     */
     @ActionMapping(params = "action=changePassword")
     public void changePassword(ActionRequest request, ActionResponse response, Model model)
             throws PasswordChangeException {
@@ -200,8 +234,8 @@ public class PasswordChangeController {
         credentialService.save(credential);
     }
 
-    protected void setDominoAndLdapPassword(String password, String screenName) throws MessageBusException,
-            PasswordChangeException {
+    protected void setDominoAndLdapPassword(String password, String screenName) throws PasswordChangeException,
+            MessageBusException {
         Message message = new Message();
         String queryString = String.format("Openagent&username=%s&password=%s&adminUserName=%s"
                 + "&adminPassword=%s", screenName, password, adminUsername, adminPassword);
@@ -263,8 +297,8 @@ public class PasswordChangeController {
             if (userGroups != null) {
                 for (UserGroup userGroup : userGroups) {
                     String userGroupName = userGroup.getName();
-                    if (userGroupName != null && userGroupName.toLowerCase()
-                            .contains(dominoUsersUserGroupName.toLowerCase())) {
+                    if (userGroupName != null && userGroupName.toLowerCase(themeDisplay.getLocale())
+                            .contains(dominoUsersUserGroupName.toLowerCase(themeDisplay.getLocale()))) {
                         return true;
                     }
                 }
