@@ -297,8 +297,8 @@ public class PasswordChangeController {
             if (userGroups != null) {
                 for (UserGroup userGroup : userGroups) {
                     String userGroupName = userGroup.getName();
-                    if (userGroupName != null && userGroupName.toLowerCase(themeDisplay.getLocale())
-                            .contains(dominoUsersUserGroupName.toLowerCase(themeDisplay.getLocale()))) {
+                    if (userGroupName != null && userGroupName.toLowerCase(Locale.getDefault())
+                            .contains(dominoUsersUserGroupName.toLowerCase(Locale.getDefault()))) {
                         return true;
                     }
                 }
