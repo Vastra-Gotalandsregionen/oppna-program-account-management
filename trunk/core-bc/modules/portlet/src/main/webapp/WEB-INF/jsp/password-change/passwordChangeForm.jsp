@@ -45,7 +45,9 @@
     Det kan ta upp till 15 minuter innan ändringen av lösenordet slår igenom.
 </p>
 
-<div><b>VGR-ID:</b> ${vgrId}</div>
+<div class="user-box-container">
+    <span class="user-box">Användar-id: <span class="user-id">${vgrId}</span></span>
+</div>
 
 <c:choose>
     <c:when test="${not empty secondsElapsed}">
