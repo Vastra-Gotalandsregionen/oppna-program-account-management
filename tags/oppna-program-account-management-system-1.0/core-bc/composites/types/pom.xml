@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!--
+This is the common Types-composite Maven POM.
+
+
+Template version: 1.4
+Generation time : 2011-10-18 13:49:06 CEST
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>se.vgregion.oppna-program-account-management</groupId>
+    <artifactId>oppna-program-account-management-core-bc</artifactId>
+    <version>1.0</version>
+    <relativePath>../../pom.xml</relativePath>
+</parent>
+  <groupId>se.vgregion.oppna-program-account-management</groupId>
+  <artifactId>oppna-program-account-management-core-bc-composite-types</artifactId>
+  <packaging>jar</packaging>
+  <name>${project.artifactId}</name>
+</project>

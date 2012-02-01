@@ -1,0 +1,17 @@
+#changePasswordForm div {
+    margin-top: 10px;
+}
+
+.user-box-container {
+    margin-bottom: 12px;
+    font-size: 1.2em;
+}
+
+.user-box-container .user-box {
+    border: 1px solid lightgray;
+    padding: 6px;
+}
+
+.user-box-container .user-box .user-id {
+    font-weight: bold;
+}

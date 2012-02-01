@@ -1,0 +1,7 @@
+#LDAP (to /applicationContext.xml)
+BIND_DN=
+BIND_PW=
+
+#Authentication (to messagebus-changepassword-routes.xml)
+admin_authentication.username=
+admin_authentication.password=
