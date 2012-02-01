@@ -15,7 +15,7 @@
   <groupId>se.vgregion.oppna-program-account-management</groupId>
   <artifactId>oppna-program-account-management-system</artifactId>
   <packaging>pom</packaging>
-  <version>1.0</version>
+  <version>1.1-SNAPSHOT</version>
   <name>${project.artifactId}</name>
 
   <modules>
@@ -25,8 +25,8 @@
   <!--NB! SCM config below assumes system name equals VGR subversion/googlecode project name! -->
   <!-- Open Source repo -->
   <scm>
-    <developerConnection>scm:svn:https://oppna-program-account-management.googlecode.com/svn/tags/oppna-program-account-management-system-1.0</developerConnection>
-    <url>http://oppna-program-account-management.googlecode.com/svn/tags/oppna-program-account-management-system-1.0</url>
+    <developerConnection>scm:svn:https://oppna-program-account-management.googlecode.com/svn/trunk</developerConnection>
+    <url>http://oppna-program-account-management.googlecode.com/svn/trunk</url>
   </scm>
 
 </project>

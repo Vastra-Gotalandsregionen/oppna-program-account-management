@@ -11,7 +11,7 @@ Generation time : 2011-10-18 13:49:06 CEST
   <parent>
     <groupId>se.vgregion.oppna-program-account-management</groupId>
     <artifactId>oppna-program-account-management-core-bc</artifactId>
-    <version>1.0</version>
+    <version>1.1-SNAPSHOT</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
   <groupId>se.vgregion.oppna-program-account-management</groupId>
