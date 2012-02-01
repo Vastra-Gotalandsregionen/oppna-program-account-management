@@ -29,6 +29,7 @@
   <import resource="jpa-connector.xml"/>
 
   <context:component-scan base-package="se.vgregion.accountmanagement.passwordchange.controller"/>
+  <context:component-scan base-package="se.vgregion.accountmanagement.passwordchange.service"/>
 
   <bean id="properties" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
     <property name="locations">

@@ -49,11 +49,20 @@ Generation time : 2011-10-18 13:49:06 CEST
     </dependency>
 
     <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>oppna-program-account-management-core-bc-composite-svc</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+<!--
+    <dependency>
       <groupId>se.vgregion.cs-iframe</groupId>
       <artifactId>cs-iframe-core-composite-svc</artifactId>
       <version>2.2-SNAPSHOT</version>
     </dependency>
+-->
 
+<!--
     <dependency>
       <groupId>se.vgregion.commons-util</groupId>
       <artifactId>commons-util-core-bc-composite-svc-ldap</artifactId>
@@ -66,6 +75,7 @@ Generation time : 2011-10-18 13:49:06 CEST
       <version>3.9</version>
     </dependency>
 
+-->
     <dependency>
       <groupId>javax.portlet</groupId>
       <artifactId>portlet-api</artifactId>
@@ -141,12 +151,6 @@ Generation time : 2011-10-18 13:49:06 CEST
     </dependency>
 
     <dependency>
-      <groupId>net.sf.ehcache</groupId>
-      <artifactId>ehcache</artifactId>
-      <version>1.6.2</version>
-    </dependency>
-
-    <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
       <version>1.8.5</version>
@@ -164,6 +168,12 @@ Generation time : 2011-10-18 13:49:06 CEST
       <groupId>org.springframework</groupId>
       <artifactId>spring-test</artifactId>
       <version>${spring.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>hsqldb</groupId>
+      <artifactId>hsqldb</artifactId>
       <scope>test</scope>
     </dependency>
 

@@ -23,6 +23,7 @@ Generation time : 2011-10-18 13:49:06 CEST
   <modules>
     <module>composites/camel</module>
     <module>composites/types</module>
+    <module>composites/svc</module>
     <module>modules/portlet</module>
   </modules>
 
