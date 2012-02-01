@@ -52,7 +52,7 @@
 <c:choose>
     <c:when test="${not empty secondsElapsed}">
         <div class="portlet-msg-info">
-            Du kan inte byta lösenord förrän om <span id="countDown"></span> minuter.
+            Du kan byta lösenord om maximalt <span id="countDown"></span> minuter.
         </div>
     </c:when>
     <c:otherwise>
@@ -79,6 +79,11 @@
 
         function Tick() {
             elapsedSeconds++;
+
+            if (elapsedSeconds % 60 == 0) {
+                window.location.reload();
+            }
+
             UpdateTimer()
             window.setTimeout("Tick()", 1000);
         }
@@ -87,7 +92,7 @@
             var secondsLeft = 900 - elapsedSeconds;
 
             if (secondsLeft <= 0) {
-                window.location.reload();
+                window.location = window.location;
             }
 
             var minutes = Math.floor((secondsLeft) / 60);
