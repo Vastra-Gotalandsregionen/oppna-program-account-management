@@ -118,7 +118,7 @@ public class PasswordChangeService {
             setDominoAndLdapPassword(password, screenName);
             verifyPasswordWasModifiedInLdap(screenName, password);
         } catch (PasswordChangeException ex) {
-            throw new PasswordChangeException("Ditt lösenord har uppdaterats i Domino men inte i KIV.", ex);
+            throw new PasswordChangeException("Anropet misslyckades.", ex);
         } catch (MessageBusException ex) {
             throw new PasswordChangeException("Tekniskt fel. Försök igen senare.", ex);
         }
