@@ -44,9 +44,9 @@ public class PasswordChangeService {
     private SimpleLdapServiceImpl simpleLdapService;
 
     @Value("${changepassword.messagebus.destination}")
-    private String messagebusDestination;
+    private String changePasswordMessagebusDestination;
     @Value("${verifypassword.messagebus.destination}")
-    private String verifypasswordMessagebusDestination;
+    private String verifyPasswordMessagebusDestination;
     @Value("${admin_authentication.username}")
     private String adminUsername;
     @Value("${admin_authentication.password}")
@@ -54,8 +54,10 @@ public class PasswordChangeService {
     @Value("${BASE}")
     private String base;
 
-    private final int defaultLimit = 15;
+    private final int defaultLimit = 15 * 60; // fifteen minutes
     private int limit = defaultLimit;
+    private final int defaultDelay = 10000; // ten seconds
+    private int delay = defaultDelay;
 
     /**
      * Constructor.
@@ -73,8 +75,12 @@ public class PasswordChangeService {
 
     }
 
-    public void setLimit(int minutes) {
-        this.limit = minutes;
+    public void setLimit(int seconds) {
+        this.limit = seconds;
+    }
+
+    public void setDelay(int millis) {
+        this.delay = millis;
     }
 
     /**
@@ -123,7 +129,6 @@ public class PasswordChangeService {
 
     protected void monitorPasswordUpdateAndUpdateInotes(final String screenName, final String password) {
         final Timer timer = new Timer();
-        final int delay = 10000;
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
@@ -139,9 +144,8 @@ public class PasswordChangeService {
                     Element element = ehcache.get(screenName);
                     final float thousand = 1000f;
                     final float sixty = 60f;
-                    if ((System.currentTimeMillis() - element.getLatestOfCreationAndUpdateTime()) / thousand / sixty
-                            > limit) {
-                        LOGGER.info("Domino password has not been updated for fifteen minutes. Giving up.");
+                    if ((System.currentTimeMillis() - element.getLatestOfCreationAndUpdateTime()) / thousand > limit) {
+                        LOGGER.info("Domino password has not been updated for " + limit + " seconds. Giving up.");
                         ehcache.remove(screenName);
                         timer.cancel();
                     }
@@ -160,11 +164,11 @@ public class PasswordChangeService {
 
         try {
             final int timeout = 15000;
-            Object reply = MessageBusUtil.sendSynchronousMessage(verifypasswordMessagebusDestination, message, timeout);
+            Object reply = MessageBusUtil.sendSynchronousMessage(verifyPasswordMessagebusDestination, message, timeout);
 
             if (reply == null) {
                 throw new MessageBusException("No reply was given. Is destination ["
-                        + verifypasswordMessagebusDestination + "] really configured?");
+                        + verifyPasswordMessagebusDestination + "] really configured?");
             } else if (reply instanceof String) {
                 try {
                     JaxbUtil jaxbUtil = new JaxbUtil(DominoResponse.class);
@@ -199,10 +203,10 @@ public class PasswordChangeService {
 
         //make call to change password
         final int timeout = 15000;
-        Object reply = MessageBusUtil.sendSynchronousMessage(messagebusDestination, message, timeout);
+        Object reply = MessageBusUtil.sendSynchronousMessage(changePasswordMessagebusDestination, message, timeout);
 
         if (reply == null) {
-            throw new MessageBusException("No reply was given. Is destination [" + messagebusDestination
+            throw new MessageBusException("No reply was given. Is destination [" + changePasswordMessagebusDestination
                     + "] really configured?");
         } else if (reply instanceof String) {
             try {
