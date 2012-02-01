@@ -137,7 +137,7 @@ public class PasswordChangeControllerTest extends TestCase {
                                 "</response>";
                     }
                 });
-        ReflectionTestUtils.setField(passwordChangeService, "messagebusDestination", messagebusDestination);
+        ReflectionTestUtils.setField(passwordChangeService, "changePasswordMessagebusDestination", messagebusDestination);
         ActionResponse response = mock(ActionResponse.class);
         when(request.getParameter("password")).thenReturn(newPassword);
         when(request.getParameter("passwordConfirm")).thenReturn(newPassword);
@@ -215,7 +215,7 @@ public class PasswordChangeControllerTest extends TestCase {
                         return null;
                     }
                 });
-        ReflectionTestUtils.setField(passwordChangeService, "messagebusDestination", messagebusDestination);
+        ReflectionTestUtils.setField(passwordChangeService, "changePasswordMessagebusDestination", messagebusDestination);
         ActionResponse response = mock(ActionResponse.class);
         when(request.getParameter("password")).thenReturn("123abc");
         when(request.getParameter("passwordConfirm")).thenReturn("123abc");
@@ -251,7 +251,7 @@ public class PasswordChangeControllerTest extends TestCase {
                         return null;
                     }
                 });
-        ReflectionTestUtils.setField(passwordChangeService, "messagebusDestination", messagebusDestination);
+        ReflectionTestUtils.setField(passwordChangeService, "changePasswordMessagebusDestination", messagebusDestination);
         ActionResponse response = mock(ActionResponse.class);
 
         when(request.getParameter("password")).thenReturn("123abc");

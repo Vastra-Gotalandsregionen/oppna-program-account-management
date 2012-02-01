@@ -1,17 +1,28 @@
 package se.vgregion.accountmanagement.passwordchange.service;
 
+import com.liferay.portal.kernel.messaging.Message;
+import com.liferay.portal.kernel.messaging.MessageBus;
+import com.liferay.portal.kernel.messaging.MessageBusException;
 import com.liferay.portal.kernel.messaging.MessageBusUtil;
+import com.liferay.portal.kernel.messaging.sender.MessageSender;
+import com.liferay.portal.kernel.messaging.sender.SynchronousMessageSender;
+import net.sf.ehcache.Cache;
 import net.sf.ehcache.Ehcache;
+import net.sf.ehcache.Element;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.stubbing.Answer;
+import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.ldap.core.LdapOperations;
 import org.springframework.ldap.core.simple.SimpleLdapTemplate;
+import org.springframework.test.util.ReflectionTestUtils;
 import se.vgregion.accountmanagement.passwordchange.PasswordChangeException;
 import se.vgregion.ldapservice.SimpleLdapServiceImpl;
 import se.vgregion.ldapservice.SimpleLdapUser;
@@ -43,12 +54,77 @@ public class PasswordChangeServiceTest {
 
     @Value("${ldap.personnel.base}")
     private String base;
+    private final String changePasswordMessagebusDestination = "vgr/change_password";
+    private final String verifyPasswordMessagebusDestination = "vgr/verify_password";
 
     @Before
     public void setup() {
+        ReflectionTestUtils.setField(passwordChangeService, "changePasswordMessagebusDestination",
+                changePasswordMessagebusDestination);
+        ReflectionTestUtils.setField(passwordChangeService, "verifyPasswordMessagebusDestination",
+                verifyPasswordMessagebusDestination);
         when(credentialService.getUserSiteCredential(anyString(), eq("iNotes"))).thenReturn(new UserSiteCredential());
+        PowerMockito.mockStatic(MessageBusUtil.class);
+        MessageBusUtil.init(mock(MessageBus.class), mock(MessageSender.class), mock(SynchronousMessageSender.class));
+        passwordChangeService.setLimit(3); //three seconds
+        passwordChangeService.setDelay(400);
+
+        Element element = new Element("asdf", "asdf", 1);
+        ReflectionTestUtils.setField(element, "lastUpdateTime", System.currentTimeMillis());
+        when(ehcache.get(anyString())).thenReturn(element);
     }
 
+    @Test
+    public void testUpdateDominoLdapAndInotes() throws MessageBusException, PasswordChangeException,
+            NoSuchAlgorithmException, UnsupportedEncodingException, InterruptedException {
+        final String screenName = "testScreenName";
+        final String password = "userPassword";
+
+        MessageDigest sha1Digest = MessageDigest.getInstance("SHA");
+        byte[] digest = sha1Digest.digest(password.getBytes("UTF-8"));
+        String encryptedPassword = "{SHA}" + DatatypeConverter.printBase64Binary(digest);
+
+        setupUserInMockLdapService(screenName, encryptedPassword);
+        when(MessageBusUtil.sendSynchronousMessage(eq(changePasswordMessagebusDestination), any(Message.class), anyInt()))
+                .thenAnswer(new Answer<String>() {
+                    @Override
+                    public String answer(InvocationOnMock invocation) throws Throwable {
+                        return "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                                "<response>\n" +
+                                "  <statuscode>1</statuscode>\n" +
+                                "  <statusmessage>Lösenordet uppdaterades för xxx</statusmessage>\n" +
+                                "</response>";
+                    }
+                });
+        when(MessageBusUtil.sendSynchronousMessage(eq(verifyPasswordMessagebusDestination), any(Message.class), anyInt()))
+                .thenAnswer(new Answer<String>() {
+                    //The first call replies that it HASN'T been updated yet (statusmessage = 0)
+                    @Override
+                    public String answer(InvocationOnMock invocation) throws Throwable {
+                        return "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                                "<response>\n" +
+                                "  <statuscode>1</statuscode>\n" +
+                                "  <statusmessage>0</statusmessage>\n" +
+                                "</response>";
+                    }
+                }).thenAnswer(new Answer<String>() {
+                    //The second call replies that it HAS been updated (statusmessage = 1)
+                    @Override
+                    public String answer(InvocationOnMock invocation) throws Throwable {
+                        return "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                                "<response>\n" +
+                                "  <statuscode>1</statuscode>\n" +
+                                "  <statusmessage>1</statusmessage>\n" +
+                                "</response>";
+                    }
+                });
+
+
+        passwordChangeService.updateDominoLdapAndInotes(screenName, password);
+
+        Thread.sleep(1000);
+        verify(ehcache).remove(screenName);
+    }
 
 
     //Test the setPasswordInLdap method. It verifies that the password is correctly set but the ldap service is
