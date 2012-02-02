@@ -53,28 +53,6 @@ Generation time : 2011-10-18 13:49:06 CEST
       <version>${project.version}</version>
     </dependency>
 
-<!--
-    <dependency>
-      <groupId>se.vgregion.cs-iframe</groupId>
-      <artifactId>cs-iframe-core-composite-svc</artifactId>
-      <version>2.2-SNAPSHOT</version>
-    </dependency>
--->
-
-<!--
-    <dependency>
-      <groupId>se.vgregion.commons-util</groupId>
-      <artifactId>commons-util-core-bc-composite-svc-ldap</artifactId>
-      <version>3.9</version>
-    </dependency>
-    
-    <dependency>
-      <groupId>se.vgregion.commons-util</groupId>
-      <artifactId>commons-util-core-bc-composite-types</artifactId>
-      <version>3.9</version>
-    </dependency>
-
--->
     <dependency>
       <groupId>javax.portlet</groupId>
       <artifactId>portlet-api</artifactId>
@@ -178,25 +156,4 @@ Generation time : 2011-10-18 13:49:06 CEST
 
   </dependencies>
 
-  <profiles>
-    <profile>
-      <id>prod</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-war-plugin</artifactId>
-            <configuration>
-              <webResources>
-                <resource>
-                  <directory>src/main/webapp/WEB-INF/prod</directory>
-                  <targetPath>WEB-INF</targetPath>
-                </resource>
-              </webResources>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 </project>
