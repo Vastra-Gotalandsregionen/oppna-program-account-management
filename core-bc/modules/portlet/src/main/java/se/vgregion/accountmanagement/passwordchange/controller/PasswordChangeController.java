@@ -33,7 +33,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.portlet.bind.annotation.ActionMapping;
 import org.springframework.web.portlet.bind.annotation.RenderMapping;
 import se.vgregion.accountmanagement.passwordchange.PasswordChangeException;
-import se.vgregion.accountmanagement.passwordchange.service.PasswordChangeService;
+import se.vgregion.accountmanagement.service.LdapAccountService;
+import se.vgregion.accountmanagement.service.PasswordChangeService;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -56,6 +57,8 @@ public class PasswordChangeController {
 
     @Autowired
     private PasswordChangeService passwordChangeService;
+    @Autowired
+    private LdapAccountService ldapAccountService;
 
     @Value("${dominoUsersUserGroupName}")
     private String dominoUsersUserGroupName;
@@ -165,8 +168,8 @@ public class PasswordChangeController {
                 passwordChangeService.updateDominoLdapAndInotes(screenName, password);
             } else {
                 //no domino -> continue with setting password in LDAP only, directly
-                passwordChangeService.setPasswordInLdap(screenName, password);
-                passwordChangeService.verifyPasswordWasModifiedInLdap(screenName, password);
+                ldapAccountService.setPasswordInLdap(screenName, password);
+                ldapAccountService.verifyPasswordWasModifiedInLdap(screenName, password);
             }
             response.setRenderParameter("success", "success");
         } catch (PasswordChangeException ex) {
@@ -216,4 +219,7 @@ public class PasswordChangeController {
         }
     }
 
+    public void setLdapAccountService(LdapAccountService ldapAccountService) {
+        this.ldapAccountService = ldapAccountService;
+    }
 }

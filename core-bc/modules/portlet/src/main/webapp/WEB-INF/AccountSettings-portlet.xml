@@ -30,7 +30,7 @@
         http://www.springframework.org/schema/context
         http://www.springframework.org/schema/context/spring-context.xsd">
 
-  <import resource="classpath:applicationContext-changePassword.xml"/>
+  <import resource="classpath:applicationContext-accountSettings.xml"/>
 
   <!-- Enable annotation driven controllers, validation etc... -->
   <mvc:resources mapping="/resources/**" location="classpath:/**"/>
@@ -38,7 +38,7 @@
 
   <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
     <property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
-    <property name="prefix" value="/WEB-INF/jsp/password-change/"/>
+    <property name="prefix" value="/WEB-INF/jsp/account-settings/"/>
     <property name="suffix" value=".jsp"/>
     <property name="contentType" value="text/html;charset=UTF-8"/>
   </bean>

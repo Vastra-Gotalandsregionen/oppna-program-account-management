@@ -34,12 +34,32 @@
       <mime-type>text/html</mime-type>
       <portlet-mode>view</portlet-mode>
     </supports>
-    <!--<supported-locale>sv</supported-locale>
-    <resource-bundle>i18n.activate-account-messages</resource-bundle>-->
     <portlet-info>
       <title>Ändra lösenord</title>
       <short-title>Ändra lösenord</short-title>
       <keywords>konto lösenord portalkatalog domino</keywords>
     </portlet-info>
   </portlet>
+
+  <portlet>
+    <portlet-name>AccountSettings</portlet-name>
+    <display-name>AccountSettings</display-name>
+    <portlet-class>org.springframework.web.portlet.DispatcherPortlet</portlet-class>
+    <expiration-cache>0</expiration-cache>
+    <supports>
+      <mime-type>text/html</mime-type>
+      <portlet-mode>view</portlet-mode>
+    </supports>
+    <portlet-info>
+      <title>Kontoinställningar</title>
+      <short-title>Kontoinställningar</short-title>
+      <keywords>konto inställningar portalkatalog</keywords>
+    </portlet-info>
+  </portlet>
+
+  <user-attribute>
+    <description>User Login ID</description>
+    <name>user.login.id</name>
+  </user-attribute>
+
 </portlet-app>

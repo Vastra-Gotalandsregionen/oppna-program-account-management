@@ -12,7 +12,6 @@ import com.liferay.portal.model.UserGroup;
 import com.liferay.portal.theme.ThemeDisplay;
 import junit.framework.TestCase;
 import net.sf.ehcache.Ehcache;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -22,16 +21,15 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.ldap.core.LdapOperations;
 import org.springframework.ldap.core.simple.SimpleLdapTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.ui.Model;
 import se.vgregion.accountmanagement.passwordchange.PasswordChangeException;
-import se.vgregion.accountmanagement.passwordchange.service.PasswordChangeService;
+import se.vgregion.accountmanagement.service.LdapAccountService;
+import se.vgregion.accountmanagement.service.PasswordChangeService;
 import se.vgregion.ldapservice.SimpleLdapServiceImpl;
 import se.vgregion.ldapservice.SimpleLdapUser;
-import se.vgregion.portal.cs.domain.UserSiteCredential;
 import se.vgregion.portal.cs.service.CredentialService;
 
 import javax.portlet.ActionRequest;
@@ -61,6 +59,9 @@ public class PasswordChangeControllerTest extends TestCase {
     private Ehcache ehcache;
 
     @InjectMocks
+    private LdapAccountService ldapAccountService = new LdapAccountService();
+    
+    @InjectMocks
     private PasswordChangeService passwordChangeService = new PasswordChangeService();
 
     @InjectMocks
@@ -72,6 +73,8 @@ public class PasswordChangeControllerTest extends TestCase {
     */private String dominoUsersUserGroupName = "DominoUsers";
 
     {
+        passwordChangeService.setLdapAccountService(ldapAccountService);
+        controller.setLdapAccountService(ldapAccountService);
         controller.setDominoUsersUserGroupName(dominoUsersUserGroupName);
         controller.setPasswordChangeService(passwordChangeService);
     }

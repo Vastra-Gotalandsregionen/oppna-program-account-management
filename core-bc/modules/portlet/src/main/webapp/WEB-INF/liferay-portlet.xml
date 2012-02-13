@@ -25,13 +25,19 @@
 <liferay-portlet-app>
   <portlet>
     <portlet-name>PasswordChange</portlet-name>
-    <!--<friendly-url-mapper-class>com.liferay.portal.kernel.portlet.DefaultFriendlyURLMapper</friendly-url-mapper-class>-->
-    <!--<friendly-url-mapping>aktivera</friendly-url-mapping>-->
-    <!--<friendly-url-routes>activation-friendly-url-routes.xml</friendly-url-routes>-->
     <action-url-redirect>true</action-url-redirect>
   </portlet>
   <portlet>
     <portlet-name>PasswordChange</portlet-name>
+    <action-url-redirect>true</action-url-redirect>
+  </portlet>
+
+  <portlet>
+    <portlet-name>AccountSettings</portlet-name>
+    <action-url-redirect>true</action-url-redirect>
+  </portlet>
+  <portlet>
+    <portlet-name>AccountSettings</portlet-name>
     <action-url-redirect>true</action-url-redirect>
   </portlet>
 

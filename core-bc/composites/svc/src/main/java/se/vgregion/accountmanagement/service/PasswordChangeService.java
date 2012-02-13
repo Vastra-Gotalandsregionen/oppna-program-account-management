@@ -1,4 +1,4 @@
-package se.vgregion.accountmanagement.passwordchange.service;
+package se.vgregion.accountmanagement.service;
 
 import com.liferay.portal.kernel.messaging.Message;
 import com.liferay.portal.kernel.messaging.MessageBusException;
@@ -13,21 +13,11 @@ import org.springframework.stereotype.Service;
 import se.vgregion.accountmanagement.domain.DominoResponse;
 import se.vgregion.accountmanagement.passwordchange.PasswordChangeException;
 import se.vgregion.http.HttpRequest;
-import se.vgregion.ldapservice.SimpleLdapServiceImpl;
-import se.vgregion.ldapservice.SimpleLdapUser;
 import se.vgregion.portal.cs.domain.UserSiteCredential;
 import se.vgregion.portal.cs.service.CredentialService;
 import se.vgregion.util.JaxbUtil;
 
-import javax.naming.NamingException;
-import javax.naming.directory.BasicAttribute;
-import javax.naming.directory.DirContext;
-import javax.naming.directory.ModificationItem;
-import javax.xml.bind.DatatypeConverter;
 import javax.xml.bind.JAXBException;
-import java.io.UnsupportedEncodingException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -41,7 +31,7 @@ public class PasswordChangeService {
     @Autowired
     private CredentialService credentialService;
     @Autowired
-    private SimpleLdapServiceImpl simpleLdapService;
+    private LdapAccountService ldapAccountService;
 
     @Value("${changepassword.messagebus.destination}")
     private String changePasswordMessagebusDestination;
@@ -63,10 +53,10 @@ public class PasswordChangeService {
      * Constructor.
      *
      * @param simpleLdapService simpleLdapService
-     */
+     *//*
     public PasswordChangeService(SimpleLdapServiceImpl simpleLdapService) {
         this.simpleLdapService = simpleLdapService;
-    }
+    }*/
 
     /**
      * Constructor.
@@ -116,7 +106,7 @@ public class PasswordChangeService {
     public void updateDominoLdapAndInotes(String screenName, String password) throws PasswordChangeException {
         try {
             setDominoAndLdapPassword(password, screenName);
-            verifyPasswordWasModifiedInLdap(screenName, password);
+            ldapAccountService.verifyPasswordWasModifiedInLdap(screenName, password);
         } catch (PasswordChangeException ex) {
             throw new PasswordChangeException("Anropet misslyckades.", ex);
         } catch (MessageBusException ex) {
@@ -241,7 +231,7 @@ public class PasswordChangeService {
      * @param password the new password
      * @throws PasswordChangeException PasswordChangeException
      */
-    public void setPasswordInLdap(String uid, String password) throws PasswordChangeException {
+   /* public void setPasswordInLdap(String uid, String password) throws PasswordChangeException {
         SimpleLdapUser ldapUser = (SimpleLdapUser) simpleLdapService.getLdapUserByUid(base, uid);
 
         if (ldapUser == null) {
@@ -253,9 +243,9 @@ public class PasswordChangeService {
         simpleLdapService.getLdapTemplate().getLdapOperations().modifyAttributes(
                 ldapUser.getDn(), new ModificationItem[]{new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
                 new BasicAttribute("userPassword", encPassword))});
-    }
+    }*/
 
-    String encryptWithSha(String password) {
+    /*String encryptWithSha(String password) {
         String encPassword = null;
         try {
             MessageDigest sha = MessageDigest.getInstance("SHA");
@@ -269,7 +259,7 @@ public class PasswordChangeService {
             e.printStackTrace();
         }
         return encPassword;
-    }
+    }*/
 
     /**
      * Verifies that the LDAP user with the given uid has the given password.
@@ -278,7 +268,7 @@ public class PasswordChangeService {
      * @param plainPassword the password in plain text which is to be validated against the password in LDAP
      * @throws PasswordChangeException PasswordChangeException
      */
-    public void verifyPasswordWasModifiedInLdap(String uid, String plainPassword) throws PasswordChangeException {
+    /*public void verifyPasswordWasModifiedInLdap(String uid, String plainPassword) throws PasswordChangeException {
         String encPassword = encryptWithSha(plainPassword);
         SimpleLdapUser ldapUser;
         ldapUser = (SimpleLdapUser) simpleLdapService.getLdapUserByUid(base, uid);
@@ -295,7 +285,7 @@ public class PasswordChangeService {
             //won't happen
             e.printStackTrace();
         }
-    }
+    }*/
 
     /**
      * Whether the password has been requested for update but has not yet been applied in Domino since it can take a
@@ -307,5 +297,9 @@ public class PasswordChangeService {
      */
     public boolean isPasswordUpdateInProgress(String screenName) {
         return ehcache.get(screenName) != null;
+    }
+
+    public void setLdapAccountService(LdapAccountService ldapAccountService) {
+        this.ldapAccountService = ldapAccountService;
     }
 }

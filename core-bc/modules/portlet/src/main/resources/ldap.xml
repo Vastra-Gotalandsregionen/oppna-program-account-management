@@ -25,24 +25,6 @@
        xmlns:context="http://www.springframework.org/schema/context"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
-  <import resource="classpath*:META-INF/spring/messagebus-changepassword-routes.xml"/>
-  <import resource="jpa-connector.xml"/>
-
-  <context:component-scan base-package="se.vgregion.accountmanagement.passwordchange.controller"/>
-  <context:component-scan base-package="se.vgregion.accountmanagement.passwordchange.service"/>
-
-  <bean id="properties" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-    <property name="locations">
-      <list>
-        <value>classpath:ldap.properties</value>
-        <value>classpath:META-INF/camel.properties</value>
-        <value>classpath:security.properties</value>
-        <value>classpath:application.properties</value>
-        <value>classpath:datasource.properties</value>
-      </list>
-    </property>
-  </bean>
-
   <!-- LDAP configuration -->
   <bean id="contextSource" class="org.springframework.ldap.core.support.LdapContextSource">
     <property name="url" value="${BIND_URL}"/>
@@ -57,22 +39,6 @@
 
   <bean id="simpleLdapService" class="se.vgregion.ldapservice.SimpleLdapServiceImpl">
     <constructor-arg ref="ldapTemplate"/>
-  </bean>
-
-  <bean id="credentialService" class="se.vgregion.portal.cs.service.CredentialServiceImpl"/>
-  <bean id="userSiteCredentialRepository" class="se.vgregion.portal.cs.domain.persistence.jpa.JpaUserSiteCredentialRepository"/>
-  <bean id="siteKeyRepository" class="se.vgregion.portal.cs.domain.persistence.jpa.JpaSiteKeyRepository"/>
-  <bean id="cryptoUtil" class="se.vgregion.portal.cs.util.AesCtrCryptoUtilImpl">
-    <constructor-arg value="${user.home}/.cs/cv.key"/>
-  </bean>
-
-  <bean id="cacheManager" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
-    <property name="configLocation" value="classpath:ehcache.xml"/>
-  </bean>
-
-  <bean id="passwordCache" class="org.springframework.cache.ehcache.EhCacheFactoryBean">
-    <property name="cacheManager" ref="cacheManager"/>
-    <property name="cacheName" value="passwordCache"/>
   </bean>
 
 </beans>
