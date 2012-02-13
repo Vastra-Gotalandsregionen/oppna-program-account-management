@@ -24,5 +24,6 @@
 <display>
 	<category name="VGR">
 		<portlet id="PasswordChange"></portlet>
+		<portlet id="AccountSettings"></portlet>
 	</category>
 </display>

@@ -28,17 +28,6 @@
   <display-name>Account Management</display-name>
   <description>Account Management</description>
 
-  <!--<listener>
-    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
-  </listener>
-
-  <context-param>
-    <param-name>contextConfigLocation</param-name>
-    <param-value>
-      classpath*:/applicationContext.xml /*-portlet.xml
-    </param-value>
-  </context-param>-->
-
   <servlet>
     <servlet-name>view</servlet-name>
     <servlet-class>org.springframework.web.servlet.ViewRendererServlet</servlet-class>
