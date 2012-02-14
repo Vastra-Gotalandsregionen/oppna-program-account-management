@@ -32,7 +32,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.portlet.bind.annotation.ActionMapping;
 import org.springframework.web.portlet.bind.annotation.RenderMapping;
-import se.vgregion.accountmanagement.passwordchange.PasswordChangeException;
+import se.vgregion.accountmanagement.PasswordChangeException;
 import se.vgregion.accountmanagement.service.LdapAccountService;
 import se.vgregion.accountmanagement.service.PasswordChangeService;
 

@@ -10,8 +10,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import se.vgregion.accountmanagement.PasswordChangeException;
 import se.vgregion.accountmanagement.domain.DominoResponse;
-import se.vgregion.accountmanagement.passwordchange.PasswordChangeException;
 import se.vgregion.http.HttpRequest;
 import se.vgregion.portal.cs.domain.UserSiteCredential;
 import se.vgregion.portal.cs.service.CredentialService;
@@ -223,69 +223,6 @@ public class PasswordChangeService {
         credential.setSiteUser(screenName);
         credentialService.save(credential);
     }
-
-    /**
-     * Updates the LDAP password for a user with a given uid in LDAP.
-     *
-     * @param uid the user's uid in LDAP
-     * @param password the new password
-     * @throws PasswordChangeException PasswordChangeException
-     */
-   /* public void setPasswordInLdap(String uid, String password) throws PasswordChangeException {
-        SimpleLdapUser ldapUser = (SimpleLdapUser) simpleLdapService.getLdapUserByUid(base, uid);
-
-        if (ldapUser == null) {
-            throw new PasswordChangeException("Din användare kunde inte hittas i katalogservern.");
-        }
-
-        String encPassword = encryptWithSha(password);
-
-        simpleLdapService.getLdapTemplate().getLdapOperations().modifyAttributes(
-                ldapUser.getDn(), new ModificationItem[]{new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
-                new BasicAttribute("userPassword", encPassword))});
-    }*/
-
-    /*String encryptWithSha(String password) {
-        String encPassword = null;
-        try {
-            MessageDigest sha = MessageDigest.getInstance("SHA");
-            byte[] digest = sha.digest(password.getBytes("UTF-8"));
-            encPassword = "{SHA}" + DatatypeConverter.printBase64Binary(digest);
-        } catch (UnsupportedEncodingException e) {
-            //won't happen
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            //won't happen
-            e.printStackTrace();
-        }
-        return encPassword;
-    }*/
-
-    /**
-     * Verifies that the LDAP user with the given uid has the given password.
-     *
-     * @param uid the LDAP user's uid
-     * @param plainPassword the password in plain text which is to be validated against the password in LDAP
-     * @throws PasswordChangeException PasswordChangeException
-     */
-    /*public void verifyPasswordWasModifiedInLdap(String uid, String plainPassword) throws PasswordChangeException {
-        String encPassword = encryptWithSha(plainPassword);
-        SimpleLdapUser ldapUser;
-        ldapUser = (SimpleLdapUser) simpleLdapService.getLdapUserByUid(base, uid);
-        byte[] userPassword;
-        try {
-            userPassword = (byte[]) ldapUser.getAttributes(new String[]{"userPassword"}).get("userPassword").get();
-            String passwordToVerify = new String(userPassword, "UTF-8");
-            if (!encPassword.equals(passwordToVerify)) {
-                throw new PasswordChangeException("Lyckades inte byta lösenord i KIV.");
-            }
-        } catch (NamingException e) {
-            throw new PasswordChangeException(e);
-        } catch (UnsupportedEncodingException e) {
-            //won't happen
-            e.printStackTrace();
-        }
-    }*/
 
     /**
      * Whether the password has been requested for update but has not yet been applied in Domino since it can take a
