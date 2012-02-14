@@ -21,7 +21,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.springframework.ldap.core.LdapOperations;
 import org.springframework.ldap.core.simple.SimpleLdapTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
-import se.vgregion.accountmanagement.passwordchange.PasswordChangeException;
+import se.vgregion.accountmanagement.PasswordChangeException;
 import se.vgregion.accountmanagement.service.LdapAccountService;
 import se.vgregion.accountmanagement.service.PasswordChangeService;
 import se.vgregion.ldapservice.SimpleLdapServiceImpl;

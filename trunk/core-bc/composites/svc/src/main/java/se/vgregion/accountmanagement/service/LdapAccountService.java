@@ -5,7 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import se.vgregion.accountmanagement.passwordchange.PasswordChangeException;
+import se.vgregion.accountmanagement.LdapException;
+import se.vgregion.accountmanagement.PasswordChangeException;
 import se.vgregion.ldapservice.LdapUser;
 import se.vgregion.ldapservice.SimpleLdapServiceImpl;
 import se.vgregion.ldapservice.SimpleLdapUser;
@@ -45,13 +46,25 @@ public class LdapAccountService {
     public LdapAccountService() {
 
     }
+    
+    public void setEmailInLdap(String uid, String email) throws LdapException {
+        SimpleLdapUser ldapUser = (SimpleLdapUser) simpleLdapService.getLdapUserByUid(base, uid);
+
+        if (ldapUser == null) {
+            throw new LdapException("Din användare kunde inte hittas i katalogservern.");
+        }
+
+        simpleLdapService.getLdapTemplate().getLdapOperations().modifyAttributes(
+                ldapUser.getDn(), new ModificationItem[]{new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
+                new BasicAttribute("mail", email))});
+    }
 
     /**
      * Updates the LDAP password for a user with a given uid in LDAP.
      *
      * @param uid      the user's uid in LDAP
      * @param password the new password
-     * @throws se.vgregion.accountmanagement.passwordchange.PasswordChangeException
+     * @throws se.vgregion.accountmanagement.PasswordChangeException
      *          PasswordChangeException
      */
     public void setPasswordInLdap(String uid, String password) throws PasswordChangeException {
@@ -89,7 +102,7 @@ public class LdapAccountService {
      *
      * @param uid           the LDAP user's uid
      * @param plainPassword the password in plain text which is to be validated against the password in LDAP
-     * @throws se.vgregion.accountmanagement.passwordchange.PasswordChangeException
+     * @throws se.vgregion.accountmanagement.PasswordChangeException
      *          PasswordChangeException
      */
     public void verifyPasswordWasModifiedInLdap(String uid, String plainPassword) throws PasswordChangeException {

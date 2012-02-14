@@ -25,20 +25,21 @@
 <%@ taglib uri="http://liferay.com/tld/aui" prefix="aui" %>
 
 <style type="text/css">
-    .all-settings td {
+    .all-account-settings td {
         padding: 15px 40px 0px 10px;
         vertical-align: bottom;
     }
 
-    .all-settings .tab-content {
+    .all-account-settings .tab-content {
         position: absolute;
     }
 
-    .all-settings #tab-content-container {
-        height: 400px;
+    .all-account-settings #tab-content-container {
+        height: 250px;
+        padding: 10px;
     }
 
-    .all-settings input[type="text"] {
+    .all-account-settings input[type="text"] {
         width: 200px;
     }
 
@@ -47,12 +48,12 @@
         text-align: center;
     }
 
-    .tab-chooser {
+    .tab-selector {
         height: 22px;
         text-align: center;
     }
 
-    .tab-chooser span {
+    .tab-selector span {
         float: left;
         height: 100%;
         margin: 4px;
@@ -66,12 +67,11 @@
         font-size: 15px;
         font-weight: normal;
         color: white;
-        z-index: 2;
     }
 
-    .tab-chooser span.chosen {
+    .tab-selector span.selected {
         background-color: white;
-        color: black;
+        color: #06579C;
     }
 
 </style>
@@ -91,9 +91,16 @@
 
 <p>Blabla...</p>
 
-<div class="all-settings">
-    <div class="tab-chooser">
-        <span id="span1" class="chosen">Allmänt</span>
+<div class="all-account-settings">
+
+    <c:if test="${not empty errorMessage}">
+        <div class="portlet-msg-error">
+                ${errorMessage}
+        </div>
+    </c:if>
+
+    <div class="tab-selector">
+        <span id="span1">Allmänt</span>
         <span id="span2">E-post</span>
         <span id="span3">Lösenord</span>
     </div>
@@ -101,10 +108,7 @@
         <div id="tab1" class="tab-content">
             <table>
                 <tbody>
-                <aui:form cssClass="account-settings-form" action="${saveActionUrl}" method="post">
-                    <tr>
-                        <td></td>
-                    </tr>
+                <aui:form cssClass="account-settings-form" action="${saveGeneralActionUrl}" method="post">
                     <tr>
                         <td><aui:input label="Förnamn: " name="firstName" value="${firstName}"/></td>
                         <td><aui:input label="Telefon: " name="phone" value="${phone}"/></td>
@@ -114,11 +118,11 @@
                         <td><aui:input label="Mobil: " name="mobile" value="${mobile}"/></td>
                     </tr>
                     <tr>
-                        <td><aui:input label="Efternamn: " name="userName" value="${lastName}"/></td>
+                        <td><aui:input label="Efternamn: " name="lastName" value="${lastName}"/></td>
                         <td><aui:input label="Organisation: " name="organization" value="${organization}"/></td>
                     </tr>
                     <tr>
-                        <td><aui:input label="E-post: " name="email" value="${email}"/></td>
+                        <td></td>
                         <td><input type="submit" value="Spara"/></td>
                     </tr>
 
@@ -130,15 +134,16 @@
         <div id="tab2" class="tab-content">
             <table>
                 <tbody>
-                <aui:form cssClass="account-settings-form" action="${saveActionUrl}" method="post">
+                <aui:form cssClass="account-settings-form" action="${saveEmailActionUrl}" method="post">
                     <tr>
-                        <td></td>
+                        <td>Nuvarande e-post: <b>${email}</b></td>
                     </tr>
                     <tr>
                         <td><aui:input label="Ny e-post: " name="newEmail" value="${newEmail}"/></td>
                     </tr>
                     <tr>
-                        <td><aui:input label="Bekräfta e-post: " name="confirmEmail" value="${confirmEmail}"/></td>
+                        <td><aui:input label="Bekräfta e-post: " name="confirmEmail" value="${confirmEmail}"
+                                autocomplete="off"/></td>
                     </tr>
                     <tr>
                         <td><input type="submit" value="Spara"/></td>
@@ -153,10 +158,11 @@
                 <tbody>
                 <aui:form cssClass="account-settings-form" action="${savePasswordActionUrl}" method="post">
                     <tr>
-                        <td><aui:input label="Nytt lösenord: " name="newPassword" value="${newPassword}"/></td>
+                        <td><aui:input type="password" label="Nytt lösenord: " name="newPassword"
+                                       value="${newPassword}"/></td>
                     </tr>
                     <tr>
-                        <td><aui:input label="Bekräfta lösenord: " name="confirmPassword"
+                        <td><aui:input type="password" label="Bekräfta lösenord: " name="confirmPassword"
                                        value="${confirmPassword}"/></td>
                     </tr>
                     <tr>
@@ -171,6 +177,6 @@
 
 <script type="text/javascript">
 
-    chooseTab(1);
+    selectTab(${selectedTab != null ? selectedTab : 1});
 
 </script>

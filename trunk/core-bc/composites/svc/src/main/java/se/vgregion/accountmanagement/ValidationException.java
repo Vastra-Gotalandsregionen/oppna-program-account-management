@@ -17,21 +17,21 @@
  *
  */
 
-package se.vgregion.accountmanagement.passwordchange;
+package se.vgregion.accountmanagement;
 
 /**
  * Exception class for exceptions which occur in relation to password change.
  *
  * @author Patrik Bergström
  */
-public class PasswordChangeException extends Exception {
+public class ValidationException extends Exception {
 
     /**
      * Constructor.
      *
      * @param message message
      */
-    public PasswordChangeException(String message) {
+    public ValidationException(String message) {
         super(message);
     }
 
@@ -40,7 +40,7 @@ public class PasswordChangeException extends Exception {
      *
      * @param cause cause
      */
-    public PasswordChangeException(Throwable cause) {
+    public ValidationException(Throwable cause) {
         super(cause);
     }
 
@@ -50,7 +50,7 @@ public class PasswordChangeException extends Exception {
      * @param message message
      * @param cause   cause
      */
-    public PasswordChangeException(String message, Throwable cause) {
+    public ValidationException(String message, Throwable cause) {
         super(message, cause);
     }
 }
