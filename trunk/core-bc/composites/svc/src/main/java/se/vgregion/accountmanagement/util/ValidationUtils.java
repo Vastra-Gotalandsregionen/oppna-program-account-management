@@ -31,7 +31,20 @@ public class ValidationUtils {
         }
 
         if (!password.equals(confirmPassword)) {
-            throw new ValidationException("Fyll i båda fälten.");
+            throw new ValidationException("Båda fälten måste vara lika.");
+        }
+
+        final int minLength = 6;
+        if (password.length() < minLength) {
+            throw new ValidationException("Lösenord måste vara minst 6 tecken.");
+        }
+
+        if (!password.matches("[a-zA-Z0-9]*")) {
+            throw new ValidationException("Lösenordet får bara innehålla bokstäver och siffror");
+        }
+
+        if (!(password.matches(".*[a-zA-Z]+.*") && password.matches(".*[0-9]+.*"))) {
+            throw new ValidationException("Lösenordet måste innehålla både bokstäver och siffror");
         }
     }
 

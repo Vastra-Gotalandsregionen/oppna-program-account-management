@@ -19,6 +19,7 @@ import javax.xml.bind.DatatypeConverter;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Map;
 
 @Service
 public class LdapAccountService {
@@ -48,7 +49,7 @@ public class LdapAccountService {
     }
     
     public void setEmailInLdap(String uid, String email) throws LdapException {
-        SimpleLdapUser ldapUser = (SimpleLdapUser) simpleLdapService.getLdapUserByUid(base, uid);
+        LdapUser ldapUser = simpleLdapService.getLdapUserByUid(base, uid);
 
         if (ldapUser == null) {
             throw new LdapException("Din användare kunde inte hittas i katalogservern.");
@@ -124,7 +125,26 @@ public class LdapAccountService {
         }
     }
 
-    public LdapUser getUser(String loggedInUser) {
-        return simpleLdapService.getLdapUserByUid("ou=externa,ou=anv,o=VGR", loggedInUser);
+    public void setAttributes(String userId, Map<String, String> attributes) throws LdapException {
+        LdapUser ldapUser = getUser(userId);
+
+        if (ldapUser == null) {
+            throw new LdapException("Användare med uid=" + userId + " hittades inte i KIV.");
+        }
+
+        ModificationItem[] modificationItems = new ModificationItem[attributes.size()];
+        int i = 0;
+        for (Map.Entry<String, String> attribute : attributes.entrySet()) {
+            modificationItems[i] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
+                    new BasicAttribute(attribute.getKey(), attribute.getValue()));
+            i++;
+        }
+
+        simpleLdapService.getLdapTemplate().getLdapOperations().modifyAttributes(
+                ldapUser.getDn(), modificationItems);
+    }
+
+    public LdapUser getUser(String userId) {
+        return simpleLdapService.getLdapUserByUid("ou=externa,ou=anv,o=VGR", userId);
     }
 }

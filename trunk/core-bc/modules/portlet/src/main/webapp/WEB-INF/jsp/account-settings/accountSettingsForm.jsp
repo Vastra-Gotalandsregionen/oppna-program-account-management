@@ -93,6 +93,11 @@
 
 <div class="all-account-settings">
 
+    <c:if test="${not empty successMessage}">
+        <div class="portlet-msg-success">
+                ${successMessage}
+        </div>
+    </c:if>
     <c:if test="${not empty errorMessage}">
         <div class="portlet-msg-error">
                 ${errorMessage}

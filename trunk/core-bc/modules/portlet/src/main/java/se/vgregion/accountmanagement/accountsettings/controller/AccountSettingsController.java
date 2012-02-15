@@ -41,6 +41,7 @@ import se.vgregion.accountmanagement.util.ValidationUtils;
 import se.vgregion.ldapservice.LdapUser;
 
 import javax.portlet.*;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -113,10 +114,12 @@ public class AccountSettingsController {
     }
 
     @ActionMapping(params = "action=saveGeneral")
-    public void saveGeneral(ActionRequest request, Model model) throws LiferayAccountException {
+    public void saveGeneral(ActionRequest request, ActionResponse response, Model model)
+            throws LiferayAccountException {
         model.addAttribute("selectedTab", GENERAL_SETTINGS_TAB_INDEX);
         
         String firstName = request.getParameter("firstName");
+        String middleName = request.getParameter("middleName");
         String lastName = request.getParameter("lastName");
         String telephone = request.getParameter("telephone");
         String mobile = request.getParameter("mobile");
@@ -124,14 +127,32 @@ public class AccountSettingsController {
 
         User user = liferayAccountService.lookupUser(Long.valueOf(request.getRemoteUser()));
 
-        // Set available fields
+        // Set available fields to the Liferay user account
         user.setFirstName(firstName);
+        user.setMiddleName(middleName);
         user.setLastName(lastName);
 
-        // Save
+        // Save in Liferay
         liferayAccountService.updateUser(user);
 
-        System.out.println("saveGeneralActionUrl");
+        // Prepare map
+        Map<String, String> attributes = new HashMap<String, String>();
+        attributes.put("givenName", firstName);
+        attributes.put("sn", lastName);
+        attributes.put("telephoneNumber", telephone);
+        attributes.put("mobile", mobile);
+        attributes.put("externalStructurepersonDN", organization);
+        
+        // Update in LDAP
+        String loggedInUser = lookupP3PInfo(request, PortletRequest.P3PUserInfos.USER_LOGIN_ID);
+        try {
+            ldapAccountService.setAttributes(loggedInUser, attributes);
+            response.setRenderParameter("successMessage", "Sparat.");
+        } catch (LdapException ex) {
+            LOGGER.warn(ex.getMessage(), ex);
+            response.setRenderParameter("errorMessage", ex.getMessage());
+        }
+
     }
 
     @ActionMapping(params = "action=saveEmail")
@@ -177,7 +198,7 @@ public class AccountSettingsController {
 
         ValidationUtils.validatePassword(newPassword, confirmPassword);
 
-        // Update LDAP only. Liferay only relies on the password in LDAP.
+        // Update LDAP only since Liferay only relies on the password in LDAP.
         String loggedInUser = lookupP3PInfo(request, PortletRequest.P3PUserInfos.USER_LOGIN_ID);
         try {
             ldapAccountService.setPasswordInLdap(loggedInUser, newPassword);
@@ -199,7 +220,7 @@ public class AccountSettingsController {
     public ModelAndView handleException(Exception ex) {
         LOGGER.error(ex.getMessage(), ex);
         ModelAndView modelAndView = new ModelAndView("errorPage");
-        modelAndView.addObject("errorMessage", ex.getMessage());
+        modelAndView.addObject("errorMessage", "Tekniskt fel.");
         return modelAndView;
     }
 

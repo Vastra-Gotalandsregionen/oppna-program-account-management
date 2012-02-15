@@ -2,26 +2,30 @@ package se.vgregion.accountmanagement.service;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.ldap.core.LdapOperations;
 import org.springframework.ldap.core.simple.SimpleLdapTemplate;
+import se.vgregion.accountmanagement.LdapException;
 import se.vgregion.accountmanagement.PasswordChangeException;
+import se.vgregion.ldapservice.LdapUser;
 import se.vgregion.ldapservice.SimpleLdapServiceImpl;
 import se.vgregion.ldapservice.SimpleLdapUser;
 
 import javax.naming.NamingException;
+import javax.naming.directory.ModificationItem;
 import javax.xml.bind.DatatypeConverter;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 /**
  * @author Patrik Bergström
@@ -62,6 +66,67 @@ public class LdapAccountServiceTest {
         String encryptedPassword2 = new String(userPassword, "UTF-8");
 
         assertEquals(expecedEncryptedPassword, encryptedPassword2);
+    }
+
+    @Test
+    public void testSetAttributes() throws Exception {
+
+        // Given
+        LdapUser ldapUser = mock(LdapUser.class);
+        when(simpleLdapService.getLdapUserByUid("ou=externa,ou=anv,o=VGR", "thisId")).thenReturn(ldapUser);
+
+        LdapOperations ldapOperations = setupLdapTemplateOnLdapService(simpleLdapService);
+        
+        // Create HashMap with three entries
+        HashMap<String, String> attributes = new HashMap<String, String>();
+        attributes.put("1", "1");
+        attributes.put("2", "2");
+        attributes.put("3", "3");
+
+        // When
+        ldapAccountService.setAttributes("thisId", attributes);
+
+        // The ArgumentCaptor will fetch an argument which is sent to a method.
+        ArgumentCaptor<ModificationItem[]> argumentCaptor = ArgumentCaptor.forClass(ModificationItem[].class);
+
+        // Then (we test that the modificationItems have the same number as the attributes map)
+        verify(ldapOperations).modifyAttributes(anyString(), argumentCaptor.capture());
+        ModificationItem[] modificationItems = argumentCaptor.getValue();
+        assertEquals(3, modificationItems.length); // Corresponds to the number of the attributes map
+    }
+
+    private LdapOperations setupLdapTemplateOnLdapService(SimpleLdapServiceImpl simpleLdapService) {
+        LdapOperations ldapOperations = mock(LdapOperations.class);
+
+        SimpleLdapTemplate simpleLdapTemplate = mock(SimpleLdapTemplate.class);
+
+        when(simpleLdapTemplate.getLdapOperations()).thenReturn(ldapOperations);
+        when(simpleLdapService.getLdapTemplate()).thenReturn(simpleLdapTemplate);
+        return ldapOperations;
+    }
+
+    @Test
+    public void testSetEmailInLdap() throws LdapException, NamingException {
+
+        // Given
+        LdapUser ldapUser = mock(LdapUser.class);
+        LdapOperations ldapOperations = setupLdapTemplateOnLdapService(simpleLdapService);
+
+        when(simpleLdapService.getLdapUserByUid((String) isNull(), eq("thisId"))).thenReturn(ldapUser);
+
+        String email = "test@email.com";
+
+        // When
+        ldapAccountService.setEmailInLdap("thisId",  email);
+
+        // The ArgumentCaptor will fetch an argument which is sent to a method.
+        ArgumentCaptor<ModificationItem[]> argumentCaptor = ArgumentCaptor.forClass(ModificationItem[].class);
+
+        // Then (we test that the email value is set correctly)
+        verify(ldapOperations).modifyAttributes(anyString(), argumentCaptor.capture());
+        ModificationItem[] modificationItems = argumentCaptor.getValue();
+        assertEquals(1, modificationItems.length); // Only one attribute should be set (the "mail" attribute)
+        assertEquals(email, modificationItems[0].getAttribute().get()); // It should equal the email String
     }
 
     private void setupUserInMockLdapService(String userId, String encryptedPassword) {
