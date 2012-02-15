@@ -16,9 +16,10 @@ import se.vgregion.accountmanagement.LiferayAccountException;
 @Service
 public class LiferayAccountService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(LiferayAccountService.class);
+
     @Autowired
     private UserLocalService userLocalService;
-    private static final Logger LOGGER = LoggerFactory.getLogger(LiferayAccountService.class);
 
     public User lookupUser(Long userId) {
 
