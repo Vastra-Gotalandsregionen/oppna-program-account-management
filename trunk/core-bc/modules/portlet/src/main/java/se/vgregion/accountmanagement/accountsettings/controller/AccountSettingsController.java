@@ -79,10 +79,11 @@ public class AccountSettingsController {
     }
 
     /**
-     * Handler method called by Spring.
+     * Loads the user attributes from LDAP and adds them to the model.
      *
-     * @param request request
-     * @param model   model
+     * @param request  request
+     * @param response response
+     * @param model    model
      * @return the accountSettingsForm view
      */
     @RenderMapping
@@ -113,11 +114,17 @@ public class AccountSettingsController {
         return "accountSettingsForm";
     }
 
+    /**
+     * Saves general information about the user in Liferay and the LDAP catalog.
+     *
+     * @param request  request
+     * @param response response
+     * @param model    model
+     */
     @ActionMapping(params = "action=saveGeneral")
-    public void saveGeneral(ActionRequest request, ActionResponse response, Model model)
-            throws LiferayAccountException {
+    public void saveGeneral(ActionRequest request, ActionResponse response, Model model) {
         model.addAttribute("selectedTab", GENERAL_SETTINGS_TAB_INDEX);
-        
+
         String firstName = request.getParameter("firstName");
         String middleName = request.getParameter("middleName");
         String lastName = request.getParameter("lastName");
@@ -132,33 +139,44 @@ public class AccountSettingsController {
         user.setMiddleName(middleName);
         user.setLastName(lastName);
 
-        // Save in Liferay
-        liferayAccountService.updateUser(user);
-
-        // Prepare map
-        Map<String, String> attributes = new HashMap<String, String>();
-        attributes.put("givenName", firstName);
-        attributes.put("sn", lastName);
-        attributes.put("telephoneNumber", telephone);
-        attributes.put("mobile", mobile);
-        attributes.put("externalStructurepersonDN", organization);
-        
-        // Update in LDAP
-        String loggedInUser = lookupP3PInfo(request, PortletRequest.P3PUserInfos.USER_LOGIN_ID);
         try {
+            // Save in Liferay
+            liferayAccountService.updateUser(user);
+
+            // Prepare map
+            Map<String, String> attributes = new HashMap<String, String>();
+            attributes.put("givenName", firstName);
+            attributes.put("sn", lastName);
+            attributes.put("telephoneNumber", telephone);
+            attributes.put("mobile", mobile);
+            attributes.put("externalStructurepersonDN", organization);
+
+            // Update in LDAP
+            String loggedInUser = lookupP3PInfo(request, PortletRequest.P3PUserInfos.USER_LOGIN_ID);
+
             ldapAccountService.setAttributes(loggedInUser, attributes);
             response.setRenderParameter("successMessage", "Sparat.");
         } catch (LdapException ex) {
+            LOGGER.warn(ex.getMessage(), ex);
+            response.setRenderParameter("errorMessage", ex.getMessage());
+        } catch (LiferayAccountException ex) {
             LOGGER.warn(ex.getMessage(), ex);
             response.setRenderParameter("errorMessage", ex.getMessage());
         }
 
     }
 
+    /**
+     * Saves the user's email in Liferay and the LDAP catalog.
+     *
+     * @param request  request
+     * @param response response
+     * @param model    model
+     */
     @ActionMapping(params = "action=saveEmail")
     public void saveEmail(ActionRequest request, ActionResponse response, Model model) {
         model.addAttribute("selectedTab", EMAIL_SETTINGS_TAB_INDEX);
-        
+
         String newEmail = request.getParameter("newEmail");
         String confirmEmail = request.getParameter("confirmEmail");
 
@@ -168,7 +186,7 @@ public class AccountSettingsController {
             User user = liferayAccountService.lookupUser(Long.valueOf(request.getRemoteUser()));
 
             user.setEmailAddress(newEmail);
-            
+
             // Update Liferay
             liferayAccountService.updateUser(user);
 
@@ -176,7 +194,7 @@ public class AccountSettingsController {
             String loggedInUser = lookupP3PInfo(request, PortletRequest.P3PUserInfos.USER_LOGIN_ID);
             ldapAccountService.setEmailInLdap(loggedInUser, newEmail);
             response.setRenderParameter("successMessage", "E-post uppdaterad.");
-            
+
         } catch (ValidationException ex) {
             response.setRenderParameter("errorMessage", ex.getMessage());
         } catch (LiferayAccountException ex) {
@@ -189,21 +207,31 @@ public class AccountSettingsController {
 
     }
 
+    /**
+     * Saves the user's password in the LDAP catalog only.
+     *
+     * @param request  request
+     * @param response response
+     * @param model    model
+     */
     @ActionMapping(params = "action=savePassword")
-    public void savePassword(ActionRequest request, ActionResponse response, Model model) throws ValidationException {
+    public void savePassword(ActionRequest request, ActionResponse response, Model model) {
         model.addAttribute("selectedTab", PASSWORD_SETTINGS_TAB_INDEX);
-        
+
         String newPassword = request.getParameter("newPassword");
         String confirmPassword = request.getParameter("confirmPassword");
 
-        ValidationUtils.validatePassword(newPassword, confirmPassword);
-
-        // Update LDAP only since Liferay only relies on the password in LDAP.
-        String loggedInUser = lookupP3PInfo(request, PortletRequest.P3PUserInfos.USER_LOGIN_ID);
         try {
+            ValidationUtils.validatePassword(newPassword, confirmPassword);
+
+            // Update LDAP only since Liferay only relies on the password in LDAP.
+            String loggedInUser = lookupP3PInfo(request, PortletRequest.P3PUserInfos.USER_LOGIN_ID);
             ldapAccountService.setPasswordInLdap(loggedInUser, newPassword);
             response.setRenderParameter("successMessage", "Lösenordet uppdaterat.");
         } catch (PasswordChangeException ex) {
+            LOGGER.error(ex.getMessage(), ex);
+            response.setRenderParameter("errorMessage", ex.getMessage());
+        } catch (ValidationException ex) {
             LOGGER.error(ex.getMessage(), ex);
             response.setRenderParameter("errorMessage", ex.getMessage());
         }
@@ -234,5 +262,5 @@ public class AccountSettingsController {
         }
         return info;
     }
-    
+
 }

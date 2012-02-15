@@ -47,7 +47,14 @@ public class LdapAccountService {
     public LdapAccountService() {
 
     }
-    
+
+    /**
+     * Sets the mail attribute of a user in the LDAP catalog.
+     *
+     * @param uid   the user's uid
+     * @param email the new email address
+     * @throws LdapException LdapException
+     */
     public void setEmailInLdap(String uid, String email) throws LdapException {
         LdapUser ldapUser = simpleLdapService.getLdapUserByUid(base, uid);
 
@@ -125,16 +132,23 @@ public class LdapAccountService {
         }
     }
 
-    public void setAttributes(String userId, Map<String, String> attributes) throws LdapException {
-        LdapUser ldapUser = getUser(userId);
+    /**
+     * Sets attributes of a user according to a {@link Map}.
+     *
+     * @param uid the LDAP user's uid
+     * @param attributes a {@link Map} of attribute names (as map keys) and attribute values (as map values)
+     * @throws LdapException LdapException
+     */
+    public void setAttributes(String uid, Map<String, Object> attributes) throws LdapException {
+        LdapUser ldapUser = getUser(uid);
 
         if (ldapUser == null) {
-            throw new LdapException("Användare med uid=" + userId + " hittades inte i KIV.");
+            throw new LdapException("Användare med uid=" + uid + " hittades inte i KIV.");
         }
 
         ModificationItem[] modificationItems = new ModificationItem[attributes.size()];
         int i = 0;
-        for (Map.Entry<String, String> attribute : attributes.entrySet()) {
+        for (Map.Entry<String, Object> attribute : attributes.entrySet()) {
             modificationItems[i] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
                     new BasicAttribute(attribute.getKey(), attribute.getValue()));
             i++;
@@ -144,7 +158,13 @@ public class LdapAccountService {
                 ldapUser.getDn(), modificationItems);
     }
 
-    public LdapUser getUser(String userId) {
-        return simpleLdapService.getLdapUserByUid("ou=externa,ou=anv,o=VGR", userId);
+    /**
+     * Fetches an LDAP user by uid.
+     *
+     * @param uid the LDAP user's uid
+     * @return the {@link LdapUser}
+     */
+    public LdapUser getUser(String uid) {
+        return simpleLdapService.getLdapUserByUid("ou=externa,ou=anv,o=VGR", uid);
     }
 }
