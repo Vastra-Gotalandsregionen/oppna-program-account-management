@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import se.vgregion.accountmanagement.LiferayAccountException;
 
 /**
+ * Service for managing accounts in Liferay's database. Contains methods for reading and writing account information.
+ *
  * @author Patrik Bergström
  */
 @Service
@@ -21,13 +23,19 @@ public class LiferayAccountService {
     @Autowired
     private UserLocalService userLocalService;
 
+    /**
+     * Finds a {@link User} by userId (a <code>long</code>).
+     *
+     * @param userId the user's userId
+     * @return the {@link User}
+     */
     public User lookupUser(Long userId) {
 
         User user = null;
         try {
             user = userLocalService.getUser(userId);
             if (user == null) {
-                String msg = String.format("Användaren med id [%s] finns inte i Liferays användar databas",
+                String msg = String.format("Användaren med id [%s] finns inte i Liferays användardatabas",
                         userId);
                 LOGGER.warn(msg, new IllegalArgumentException("Användaren hittades inte"));
             }
@@ -40,6 +48,12 @@ public class LiferayAccountService {
         return user;
     }
 
+    /**
+     * Updates a Liferay user by providing a {@link User} object which is to be stored.
+     *
+     * @param user the {@link User} object to be stored
+     * @throws LiferayAccountException LiferayAccountException
+     */
     public void updateUser(User user) throws LiferayAccountException {
         try {
             userLocalService.updateUser(user);

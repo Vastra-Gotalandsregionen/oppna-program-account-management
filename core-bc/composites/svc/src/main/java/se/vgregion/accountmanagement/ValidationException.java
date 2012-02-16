@@ -20,7 +20,7 @@
 package se.vgregion.accountmanagement;
 
 /**
- * Exception class for exceptions which occur in relation to password change.
+ * Exception class which is thrown when validation fails.
  *
  * @author Patrik Bergström
  */
