@@ -24,7 +24,6 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://liferay.com/tld/aui" prefix="aui" %>
 
-<link href="${pageContext.request.contextPath}/css/style.css" type="text/css" rel="stylesheet"/>
 <script type="text/javascript" src="${pageContext.request.contextPath}/js/account-settings.js"></script>
 
 <portlet:actionURL var="saveGeneralActionUrl">
