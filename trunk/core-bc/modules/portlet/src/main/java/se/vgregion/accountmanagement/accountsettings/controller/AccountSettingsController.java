@@ -91,6 +91,10 @@ public class AccountSettingsController {
 
         String loggedInUser = lookupP3PInfo(request, PortletRequest.P3PUserInfos.USER_LOGIN_ID);
 
+        if (loggedInUser == null) {
+            model.addAttribute("errorMessage", "Tekniskt fel. Din användare hittas inte.");
+            return "errorPage";
+        }
         if (!loggedInUser.startsWith("ex_")) {
             model.addAttribute("errorMessage", "Denna tillämpning är endast tillgänglig för icke VGR-anställda.");
             return "errorPage";

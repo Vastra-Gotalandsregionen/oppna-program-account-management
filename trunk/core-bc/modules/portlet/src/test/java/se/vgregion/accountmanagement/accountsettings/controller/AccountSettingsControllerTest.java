@@ -14,10 +14,8 @@ import se.vgregion.accountmanagement.service.LiferayAccountService;
 import se.vgregion.ldapservice.LdapUser;
 import se.vgregion.ldapservice.SimpleLdapServiceImpl;
 
-import javax.portlet.ActionRequest;
-import javax.portlet.ActionResponse;
-import javax.portlet.RenderRequest;
-import javax.portlet.RenderResponse;
+import javax.portlet.*;
+import java.util.HashMap;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
@@ -48,6 +46,11 @@ public class AccountSettingsControllerTest {
     public void testShowAccountSettingsForm() throws Exception {
 
         // Given
+        RenderRequest request = mock(RenderRequest.class);
+        HashMap<String, String> userInfo = new HashMap<String, String>();
+        userInfo.put(PortletRequest.P3PUserInfos.USER_LOGIN_ID.toString(), "ex_ScreenName");
+        when(request.getAttribute(PortletRequest.USER_INFO)).thenReturn(userInfo);
+
         LdapUser ldapUser = mock(LdapUser.class);
         when(ldapUser.getAttributeValue("givenName")).thenReturn("testFirstName");
         when(ldapUser.getAttributeValue("middleName")).thenReturn("testMiddleName");
@@ -62,11 +65,11 @@ public class AccountSettingsControllerTest {
         Model model = mock(Model.class);
 
         // When
-        accountSettingsController.showAccountSettingsForm(mock(RenderRequest.class), mock(RenderResponse.class),
+        accountSettingsController.showAccountSettingsForm(request, mock(RenderResponse.class),
                 model);
 
         // Then
-        verify(model, times(7)).addAttribute(anyString(), anyString());
+        verify(model, times(8)).addAttribute(anyString(), anyString()); // Seven times from the user attributes and one from the selected tab
     }
 
     @Test
