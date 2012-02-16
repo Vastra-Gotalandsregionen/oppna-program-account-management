@@ -24,58 +24,6 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://liferay.com/tld/aui" prefix="aui" %>
 
-<style type="text/css">
-    .all-account-settings td {
-        padding: 15px 40px 0px 10px;
-        vertical-align: bottom;
-    }
-
-    .all-account-settings .tab-content {
-        position: absolute;
-    }
-
-    .all-account-settings #tab-content-container {
-        height: 250px;
-        padding: 10px;
-    }
-
-    .all-account-settings input[type="text"] {
-        width: 200px;
-    }
-
-    .account-settings-form {
-        height: 25px;
-        text-align: center;
-    }
-
-    .tab-selector {
-        height: 22px;
-        text-align: center;
-    }
-
-    .tab-selector span {
-        float: left;
-        height: 100%;
-        margin: 4px;
-        width: 31%;
-        background-color: #06579c;
-        border-top-left-radius: 4px;
-        border-top-right-radius: 4px;
-        border: 1px solid #75A1C6;
-        border-bottom: 0;
-        font-family: Ubuntu, Arial, Verdana, Helvetica, sans-serif;
-        font-size: 15px;
-        font-weight: normal;
-        color: white;
-    }
-
-    .tab-selector span.selected {
-        background-color: white;
-        color: #06579C;
-    }
-
-</style>
-
 <link href="${pageContext.request.contextPath}/css/style.css" type="text/css" rel="stylesheet"/>
 <script type="text/javascript" src="${pageContext.request.contextPath}/js/account-settings.js"></script>
 
@@ -88,10 +36,17 @@
 <portlet:actionURL var="savePasswordActionUrl">
     <portlet:param name="action" value="savePassword"/>
 </portlet:actionURL>
+<portlet:renderURL var="toTab1">
+    <portlet:param name="tab" value="1"/>
+</portlet:renderURL>
+<portlet:renderURL var="toTab2">
+    <portlet:param name="tab" value="2"/>
+</portlet:renderURL>
+<portlet:renderURL var="toTab3">
+    <portlet:param name="tab" value="3"/>
+</portlet:renderURL>
 
-<p>Blabla...</p>
-
-<div class="all-account-settings">
+<div class="account-settings-portlet">
 
     <c:if test="${not empty successMessage}">
         <div class="portlet-msg-success">
@@ -105,18 +60,19 @@
     </c:if>
 
     <div class="tab-selector">
-        <span id="span1">Allmänt</span>
-        <span id="span2">E-post</span>
-        <span id="span3">Lösenord</span>
+        <a id="anchor1" href="${toTab1}" class="${selectedTab == 1 ? 'selected' : 'not-selected'}"><span id="span1">Allmänt</span></a>
+        <a id="anchor2" href="${toTab2}" class="${selectedTab == 2 ? 'selected' : 'not-selected'}"><span id="span2">E-post</span></a>
+        <a id="anchor3" href="${toTab3}" class="${selectedTab == 3 ? 'selected' : 'not-selected'}"><span id="span3">Lösenord</span></a>
     </div>
     <div id="tab-content-container">
-        <div id="tab1" class="tab-content">
+
+        <div id="tab1" class="tab-content" style="${selectedTab == 1 ? 'visibility: visible' : 'visibility: hidden'}">
             <table>
                 <tbody>
                 <aui:form cssClass="account-settings-form" action="${saveGeneralActionUrl}" method="post">
                     <tr>
                         <td><aui:input label="Förnamn: " name="firstName" value="${firstName}"/></td>
-                        <td><aui:input label="Telefon: " name="phone" value="${phone}"/></td>
+                        <td><aui:input label="Telefon: " name="telephone" value="${telephone}"/></td>
                     </tr>
                     <tr>
                         <td><aui:input label="Mellannamn: " name="middleName" value="${middleName}"/></td>
@@ -130,13 +86,12 @@
                         <td></td>
                         <td><input type="submit" value="Spara"/></td>
                     </tr>
-
                 </aui:form>
                 </tbody>
             </table>
         </div>
 
-        <div id="tab2" class="tab-content">
+        <div id="tab2" class="tab-content" style="${selectedTab == 2 ? 'visibility: visible' : 'visibility: hidden'}">
             <table>
                 <tbody>
                 <aui:form cssClass="account-settings-form" action="${saveEmailActionUrl}" method="post">
@@ -158,10 +113,15 @@
             </table>
         </div>
 
-        <div id="tab3" class="tab-content">
+        <div id="tab3" class="tab-content" style="${selectedTab == 3 ? 'visibility: visible' : 'visibility: hidden'}">
             <table>
                 <tbody>
                 <aui:form cssClass="account-settings-form" action="${savePasswordActionUrl}" method="post">
+                    <tr>
+                        <td>
+                            Lösenordet måste vara minst 6 tecken långt, innehålla både siffror och bokstäver och bara siffror och bokstäver (ej åäö).
+                        </td>
+                    </tr>
                     <tr>
                         <td><aui:input type="password" label="Nytt lösenord: " name="newPassword"
                                        value="${newPassword}"/></td>
@@ -177,6 +137,7 @@
                 </tbody>
             </table>
         </div>
+
     </div>
 </div>
 

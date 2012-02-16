@@ -1,17 +1,71 @@
-#changePasswordForm div {
+/* ChangePassword */
+.change-password-portlet .change-password-form div {
     margin-top: 10px;
 }
 
-.user-box-container {
+.change-password-portlet .user-box-container {
     margin-bottom: 12px;
     font-size: 1.2em;
 }
 
-.user-box-container .user-box {
+.change-password-portlet .user-box-container .user-box {
     border: 1px solid lightgray;
     padding: 6px;
 }
 
-.user-box-container .user-box .user-id {
+.change-password-portlet .user-box-container .user-box .user-id {
     font-weight: bold;
+}
+
+/* AccountSettings */
+
+.account-settings-portlet td {
+    padding: 15px 40px 0px 10px;
+    vertical-align: bottom;
+}
+
+.account-settings-portlet .tab-content {
+    position: absolute;
+}
+
+.account-settings-portlet #tab-content-container {
+    height: 250px;
+    padding: 10px;
+}
+
+.account-settings-portlet input[type="text"] {
+    width: 200px;
+}
+
+.account-settings-portlet .account-settings-form {
+    height: 25px;
+    text-align: center;
+}
+
+.account-settings-portlet .tab-selector {
+    height: 22px;
+    text-align: center;
+}
+
+.account-settings-portlet .tab-selector a {
+    float: left;
+    height: 100%;
+    margin: 4px;
+    width: 31%;
+    background-color: #06579c;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border: 1px solid #75A1C6;
+    border-bottom: 0;
+    font-family: Ubuntu, Arial, Verdana, Helvetica, sans-serif;
+    font-size: 15px;
+    font-weight: normal;
+    color: white;
+    text-decoration: none;
+}
+
+.account-settings-portlet .tab-selector a.selected {
+    background-color: white;
+    color: #06579C;
+    cursor: default;
 }

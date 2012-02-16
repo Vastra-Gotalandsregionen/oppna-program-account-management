@@ -62,6 +62,8 @@ public class LdapAccountService {
             throw new LdapException("Din användare kunde inte hittas i katalogservern.");
         }
 
+        LOGGER.debug("Setting new email for user with uid=" + uid + ".");
+        
         simpleLdapService.getLdapTemplate().getLdapOperations().modifyAttributes(
                 ldapUser.getDn(), new ModificationItem[]{new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
                 new BasicAttribute("mail", email))});
@@ -83,6 +85,8 @@ public class LdapAccountService {
         }
 
         String encPassword = encryptWithSha(password);
+
+        LOGGER.debug("Setting new password for user with uid=" + uid + ".");
 
         simpleLdapService.getLdapTemplate().getLdapOperations().modifyAttributes(
                 ldapUser.getDn(), new ModificationItem[]{new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
@@ -124,6 +128,7 @@ public class LdapAccountService {
             if (!encPassword.equals(passwordToVerify)) {
                 throw new PasswordChangeException("Lyckades inte byta lösenord i KIV.");
             }
+            LOGGER.debug("Password for user with uid=" + uid + " was successfully updated.");
         } catch (NamingException e) {
             throw new PasswordChangeException(e);
         } catch (UnsupportedEncodingException e) {
@@ -153,6 +158,8 @@ public class LdapAccountService {
                     new BasicAttribute(attribute.getKey(), attribute.getValue()));
             i++;
         }
+
+        LOGGER.debug("Updating attributes in LDAP for user with uid=" + uid + ".");
 
         simpleLdapService.getLdapTemplate().getLdapOperations().modifyAttributes(
                 ldapUser.getDn(), modificationItems);

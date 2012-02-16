@@ -4,23 +4,25 @@ function selectTab(selectedIndex) {
 
     for (var index = 1; index <= noTabs; index++) {
         var tab = document.getElementById('tab' + index);
-        span = document.getElementById('span' + index);
+        anchor = document.getElementById('anchor' + index);
 
         if (index != selectedIndex) {
 
-            span.onclick = function (e) {
+            anchor.onclick = function (e) {
                 var spanId = e.target.id;
                 var spanIndex = spanId.charAt(spanId.length - 1);
                 selectTab(spanIndex);
+
+                return false;
             };
 
-            span.className = 'not-selected';
-            span.style.cursor = 'pointer';
+            anchor.className = 'not-selected';
             tab.style.visibility = 'hidden';
         } else {
-            span.onclick = null;
-            span.className = 'selected';
-            span.style.cursor = 'auto';
+            anchor.onclick = function (e) {
+                return false;
+            };
+            anchor.className = 'selected';
             tab.style.visibility = 'visible';
         }
     }

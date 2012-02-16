@@ -41,8 +41,6 @@ public class PasswordChangeService {
     private String adminUsername;
     @Value("${admin_authentication.password}")
     private String adminPassword;
-    @Value("${BASE}")
-    private String base;
 
     private final int defaultLimit = 15 * 60; // fifteen minutes
     private int limit = defaultLimit;
@@ -133,7 +131,6 @@ public class PasswordChangeService {
                     // If more than fifteen minutes have passed we give up
                     Element element = ehcache.get(screenName);
                     final float thousand = 1000f;
-                    final float sixty = 60f;
                     if ((System.currentTimeMillis() - element.getLatestOfCreationAndUpdateTime()) / thousand > limit) {
                         LOGGER.info("Domino password has not been updated for " + limit + " seconds. Giving up.");
                         ehcache.remove(screenName);

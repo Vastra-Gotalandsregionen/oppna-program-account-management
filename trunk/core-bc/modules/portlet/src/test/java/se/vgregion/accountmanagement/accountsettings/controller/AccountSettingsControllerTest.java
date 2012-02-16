@@ -50,6 +50,7 @@ public class AccountSettingsControllerTest {
         // Given
         LdapUser ldapUser = mock(LdapUser.class);
         when(ldapUser.getAttributeValue("givenName")).thenReturn("testFirstName");
+        when(ldapUser.getAttributeValue("middleName")).thenReturn("testMiddleName");
         when(ldapUser.getAttributeValue("sn")).thenReturn("testLastName");
         when(ldapUser.getAttributeValue("mail")).thenReturn("test@email.com");
         when(ldapUser.getAttributeValue("telephoneNumber")).thenReturn("065-46540684");
@@ -65,7 +66,7 @@ public class AccountSettingsControllerTest {
                 model);
 
         // Then
-        verify(model, times(6)).addAttribute(anyString(), anyString());
+        verify(model, times(7)).addAttribute(anyString(), anyString());
     }
 
     @Test

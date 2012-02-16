@@ -91,6 +91,19 @@ public class AccountSettingsController {
 
         String loggedInUser = lookupP3PInfo(request, PortletRequest.P3PUserInfos.USER_LOGIN_ID);
 
+        if (!loggedInUser.startsWith("ex_")) {
+            model.addAttribute("errorMessage", "Denna tillämpning är endast tillgänglig för icke VGR-anställda.");
+            return "errorPage";
+        }
+        
+        String selectedTab = request.getParameter("tab");
+        if (selectedTab != null) {
+            model.addAttribute("selectedTab", selectedTab);
+        } else if (!model.containsAttribute("selectedTab")) {
+            model.addAttribute("selectedTab", 1);
+        }
+
+
         String[] errorMessages = request.getParameterMap().get("errorMessage");
         if (errorMessages != null && errorMessages.length > 0) {
             // There should only be one
@@ -104,7 +117,13 @@ public class AccountSettingsController {
 
         LdapUser user = ldapAccountService.getUser(loggedInUser);
 
+        if (user == null) {
+            model.addAttribute("errorMessage", "Din användare finns inte i KIV.");
+            return "errorPage";
+        }
+
         model.addAttribute("firstName", user.getAttributeValue("givenName"));
+        model.addAttribute("middleName", user.getAttributeValue("middleName"));
         model.addAttribute("lastName", user.getAttributeValue("sn"));
         model.addAttribute("email", user.getAttributeValue("mail"));
         model.addAttribute("telephone", user.getAttributeValue("telephoneNumber"));
@@ -146,6 +165,7 @@ public class AccountSettingsController {
             // Prepare map
             Map<String, String> attributes = new HashMap<String, String>();
             attributes.put("givenName", firstName);
+            attributes.put("middleName", middleName);
             attributes.put("sn", lastName);
             attributes.put("telephoneNumber", telephone);
             attributes.put("mobile", mobile);
@@ -232,7 +252,7 @@ public class AccountSettingsController {
             LOGGER.error(ex.getMessage(), ex);
             response.setRenderParameter("errorMessage", ex.getMessage());
         } catch (ValidationException ex) {
-            LOGGER.error(ex.getMessage(), ex);
+            LOGGER.debug(ex.getMessage());
             response.setRenderParameter("errorMessage", ex.getMessage());
         }
 
