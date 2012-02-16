@@ -5,26 +5,47 @@ import se.vgregion.accountmanagement.ValidationException;
 import java.util.regex.Pattern;
 
 /**
+ * Utility class with static methods for validation of different concepts.
+ *
  * @author Patrik Bergström
  */
-public class ValidationUtils {
+public final class ValidationUtils {
 
-    private static final Pattern emailPattern = Pattern.compile(".+@.+\\.[a-z]+");
+    private ValidationUtils() {
+        // Private constructor in utility class
+    }
 
-    public static void validateEmail(String newEmail, String confirmEmail) throws ValidationException {
-        if (isEmpty(newEmail) || isEmpty(confirmEmail)) {
+    private static final Pattern EMAIL_PATTERN = Pattern.compile(".+@.+\\.[a-z]+");
+
+    /**
+     * Validates that two arguments are not empty, equal and valid email addresses.
+     *
+     * @param email email argument one
+     * @param confirmEmail email argument two
+     * @throws ValidationException if some of the criteria fails
+     */
+    public static void validateEmail(String email, String confirmEmail) throws ValidationException {
+        if (isEmpty(email) || isEmpty(confirmEmail)) {
             throw new ValidationException("Fyll i båda fälten.");
         }
 
-        if (!newEmail.equals(confirmEmail)) {
+        if (!email.equals(confirmEmail)) {
             throw new ValidationException("Båda fälten måste vara lika.");
         }
 
-        if (!isEmail(newEmail)) {
+        if (!isEmail(email)) {
             throw new ValidationException("Ogiltig e-postadress.");
         }
     }
-    
+
+
+    /**
+     * Validates that two arguments are not empty, equal and have the right strength.
+     *
+     * @param password password argument one
+     * @param confirmPassword password argument two
+     * @throws ValidationException if some of the criteria fails
+     */
     public static void validatePassword(String password, String confirmPassword) throws ValidationException {
         if (isEmpty(password) || isEmpty(confirmPassword)) {
             throw new ValidationException("Fyll i båda fälten.");
@@ -48,12 +69,24 @@ public class ValidationUtils {
         }
     }
 
+    /**
+     * Tests whether a String is null or zero-length.
+     *
+     * @param s the String to test
+     * @return <code>true</code> if the String is null or zero-length or <code>false</code> otherwise
+     */
     public static boolean isEmpty(String s) {
         return s == null || "".equals(s);
     }
 
+    /**
+     * Tests whether a String is a valid email address.
+     *
+     * @param value the String to test
+     * @return <code>true</code>
+     */
     public static boolean isEmail(String value) {
-        return emailPattern.matcher(value).matches();
+        return EMAIL_PATTERN.matcher(value).matches();
     }
 
 }
