@@ -139,7 +139,7 @@ public class LdapAccountService {
      * @param attributes a {@link Map} of attribute names (as map keys) and attribute values (as map values)
      * @throws LdapException LdapException
      */
-    public void setAttributes(String uid, Map<String, Object> attributes) throws LdapException {
+    public void setAttributes(String uid, Map<String, ? extends Object> attributes) throws LdapException {
         LdapUser ldapUser = getUser(uid);
 
         if (ldapUser == null) {
@@ -148,7 +148,7 @@ public class LdapAccountService {
 
         ModificationItem[] modificationItems = new ModificationItem[attributes.size()];
         int i = 0;
-        for (Map.Entry<String, Object> attribute : attributes.entrySet()) {
+        for (Map.Entry<String, ? extends Object> attribute : attributes.entrySet()) {
             modificationItems[i] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
                     new BasicAttribute(attribute.getKey(), attribute.getValue()));
             i++;
