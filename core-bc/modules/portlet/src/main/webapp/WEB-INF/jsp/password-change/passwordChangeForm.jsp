@@ -30,49 +30,53 @@
     <portlet:param name="action" value="changePassword"/>
 </portlet:actionURL>
 
-<c:if test="${not empty errorMessage}">
-    <div class="portlet-msg-error">
-            ${errorMessage}
-    </div>
-</c:if>
+<div class="change-password-portlet">
 
-<p>
-    Lösenordet som du har till Regionportalen är samma som det du fått för att nå e-post, kalender mm via webben.
-    När du ändrar ditt lösenordet kommer ändringen genomföras både för webbmailen och Regionportalen.
-</p>
-
-<p class="portlet-msg-info">
-    Det kan ta upp till 15 minuter innan ändringen av lösenordet slår igenom.
-</p>
-
-<div class="user-box-container">
-    <span class="user-box">Användar-id: <span class="user-id">${vgrId}</span></span>
-</div>
-
-<c:choose>
-    <c:when test="${not empty secondsElapsed}">
-        <div class="portlet-msg-info">
-            Du kan byta lösenord om maximalt <span id="countDown"></span> minuter.
+    <c:if test="${not empty errorMessage}">
+        <div class="portlet-msg-error">
+                ${errorMessage}
         </div>
-    </c:when>
-    <c:otherwise>
-        <form id="changePasswordForm" action="${changePasswordAction}" method="POST">
+    </c:if>
 
-            <div><aui:input type="password" label="Nytt lösenord" inlineField="true" name="password"
-                            helpMessage="Lösenord med både siffror och bokstäver och endast siffror och bokstäver. Minst 6 tecken."
-                            autocomplete="off"/></div>
-            <div><aui:input type="password" label="Bekräfta nytt lösenord" inlineField="true" name="passwordConfirm"
-                            autocomplete="off"/></div>
-            <div><input type="submit" value="Ändra lösenord"/></div>
-        </form>
-    </c:otherwise>
-</c:choose>
+    <p>
+        Lösenordet som du har till Regionportalen är samma som det du fått för att nå e-post, kalender mm via webben.
+        När du ändrar ditt lösenordet kommer ändringen genomföras både för webbmailen och Regionportalen.
+    </p>
+
+    <p class="portlet-msg-info">
+        Det kan ta upp till 15 minuter innan ändringen av lösenordet slår igenom.
+    </p>
+
+    <div class="user-box-container">
+        <span class="user-box">Användar-id: <span class="user-id">${vgrId}</span></span>
+    </div>
+
+    <c:choose>
+        <c:when test="${not empty secondsElapsed}">
+            <div class="portlet-msg-info">
+                Du kan byta lösenord om maximalt <span id="count-down"></span> minuter.
+            </div>
+        </c:when>
+        <c:otherwise>
+            <form class="change-password-form" action="${changePasswordAction}" method="POST">
+
+                <div><aui:input type="password" label="Nytt lösenord" inlineField="true" name="password"
+                                helpMessage="Lösenord med både siffror och bokstäver och endast siffror och bokstäver. Minst 6 tecken."
+                                autocomplete="off"/></div>
+                <div><aui:input type="password" label="Bekräfta nytt lösenord" inlineField="true" name="passwordConfirm"
+                                autocomplete="off"/></div>
+                <div><input type="submit" value="Ändra lösenord"/></div>
+            </form>
+        </c:otherwise>
+    </c:choose>
+
+</div>
 
 <c:if test="${not empty secondsElapsed}">
     <script type="text/javascript">
         var elapsedSeconds = "${secondsElapsed}";
 
-        var timer = document.getElementById("countDown");
+        var timer = document.getElementById("count-down");
 
         UpdateTimer()
         window.setTimeout("Tick()", 1000);
