@@ -107,7 +107,6 @@ public class AccountSettingsController {
             model.addAttribute("selectedTab", 1);
         }
 
-
         String[] errorMessages = request.getParameterMap().get("errorMessage");
         if (errorMessages != null && errorMessages.length > 0) {
             // There should only be one

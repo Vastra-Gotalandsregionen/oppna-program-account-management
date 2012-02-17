@@ -70,20 +70,20 @@
                 <tbody>
                 <aui:form cssClass="account-settings-form" action="${saveGeneralActionUrl}" method="post">
                     <tr>
-                        <td><aui:input label="Förnamn: " name="firstName" value="${firstName}"/></td>
-                        <td><aui:input label="Telefon: " name="telephone" value="${telephone}"/></td>
+                        <td><aui:input label="Förnamn: " name="firstName" value="${firstName}" tabindex="1001"/></td>
+                        <td><aui:input label="Telefon: " name="telephone" value="${telephone}" tabindex="1004"/></td>
                     </tr>
                     <tr>
-                        <td><aui:input label="Mellannamn: " name="middleName" value="${middleName}"/></td>
-                        <td><aui:input label="Mobil: " name="mobile" value="${mobile}"/></td>
+                        <td><aui:input label="Mellannamn: " name="middleName" value="${middleName}" tabindex="1002"/></td>
+                        <td><aui:input label="Mobil: " name="mobile" value="${mobile}" tabindex="1005"/></td>
                     </tr>
                     <tr>
-                        <td><aui:input label="Efternamn: " name="lastName" value="${lastName}"/></td>
-                        <td><aui:input label="Organisation: " name="organization" value="${organization}"/></td>
+                        <td><aui:input label="Efternamn: " name="lastName" value="${lastName}" tabindex="1003"/></td>
+                        <td><aui:input label="Organisation: " name="organization" value="${organization}" tabindex="1006"/></td>
                     </tr>
                     <tr>
                         <td></td>
-                        <td><input type="submit" value="Spara"/></td>
+                        <td><input type="submit" value="Spara" tabindex="1007"/></td>
                     </tr>
                 </aui:form>
                 </tbody>

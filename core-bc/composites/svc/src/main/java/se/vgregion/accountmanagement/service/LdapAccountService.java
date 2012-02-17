@@ -154,8 +154,13 @@ public class LdapAccountService {
         ModificationItem[] modificationItems = new ModificationItem[attributes.size()];
         int i = 0;
         for (Map.Entry<String, ? extends Object> attribute : attributes.entrySet()) {
+            // Make this check and modification since we are not allowed to store zero-length strings in the LDAP
+            Object theValue = attribute.getValue();
+            if (theValue != null && "".equals(theValue)) {
+                theValue = null;
+            }
             modificationItems[i] = new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
-                    new BasicAttribute(attribute.getKey(), attribute.getValue()));
+                    new BasicAttribute(attribute.getKey(), theValue));
             i++;
         }
 
