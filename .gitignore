@@ -1,7 +1,0 @@
-
-/trunk/core-bc/modules/portlet/target
-*.iml
-rebel.xml
-security.properties
-**/.idea/*
-.idea/*

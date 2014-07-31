@@ -20,7 +20,7 @@
 --%>
 
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet" %>
+<%@ taglib uri="http://java.sun.com/portlet" prefix="portlet" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://liferay.com/tld/aui" prefix="aui" %>
 
@@ -39,12 +39,7 @@
     </c:if>
 
     <p>
-        Lösenordet som du har till Regionportalen är samma som det du fått för att nå e-post, kalender mm via webben.
-        När du ändrar ditt lösenordet kommer ändringen genomföras både för webbmailen och Regionportalen.
-    </p>
-
-    <p class="portlet-msg-info">
-        Det kan ta upp till 15 minuter innan ändringen av lösenordet slår igenom.
+        Här ändrar du lösenordet som du använder för att logga in i Regionportalen.
     </p>
 
     <div class="user-box-container">
@@ -71,40 +66,3 @@
     </c:choose>
 
 </div>
-
-<c:if test="${not empty secondsElapsed}">
-    <script type="text/javascript">
-        var elapsedSeconds = "${secondsElapsed}";
-
-        var timer = document.getElementById("count-down");
-
-        UpdateTimer()
-        window.setTimeout("Tick()", 1000);
-
-        function Tick() {
-            elapsedSeconds++;
-
-            if (elapsedSeconds % 60 == 0) {
-                window.location.reload();
-            }
-
-            UpdateTimer()
-            window.setTimeout("Tick()", 1000);
-        }
-
-        function UpdateTimer() {
-            var secondsLeft = 900 - elapsedSeconds;
-
-            if (secondsLeft <= 0) {
-                window.location = window.location;
-            }
-
-            var minutes = Math.floor((secondsLeft) / 60);
-            var seconds = secondsLeft % 60;
-            if (seconds < 10) {
-                seconds = "0" + seconds;
-            }
-            timer.innerHTML = minutes + ":" + seconds;
-        }
-    </script>
-</c:if>

@@ -20,16 +20,13 @@
 --%>
 
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet" %>
+<%@ taglib uri="http://java.sun.com/portlet" prefix="portlet" %>
 
 <portlet:renderURL var="returnUrl">
 </portlet:renderURL>
 
 <div class="portlet-msg-success">
-    Ditt lösenord håller på att ändras.
-    <br/>
-    <br/>
-    Det kan ta upp till 15 minuter innan ändringen av lösenordet slår igenom.
+    Ditt lösenord har ändrats.
 
     <a href="${returnUrl}">Tillbaka</a>
 </div>

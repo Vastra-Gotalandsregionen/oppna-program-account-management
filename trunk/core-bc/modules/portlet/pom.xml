@@ -58,6 +58,12 @@ Generation time : 2011-10-18 13:49:06 CEST
       <artifactId>portlet-api</artifactId>
     </dependency>
 
+    <!-- To get tag assistance in your IDE -->
+    <dependency>
+      <groupId>com.liferay.portal</groupId>
+      <artifactId>util-taglib</artifactId>
+    </dependency>
+
     <dependency>
       <groupId>se.vgregion.javg</groupId>
       <artifactId>javg-rt-support</artifactId>
@@ -173,8 +179,8 @@ Generation time : 2011-10-18 13:49:06 CEST
 
   </dependencies>
 
-  <properties>
+  <!--<properties>
     <liferay.version>6.0.11</liferay.version>
-  </properties>
+  </properties>-->
 
 </project>

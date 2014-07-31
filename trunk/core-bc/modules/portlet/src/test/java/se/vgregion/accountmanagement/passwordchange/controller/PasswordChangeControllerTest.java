@@ -8,7 +8,6 @@ import com.liferay.portal.kernel.messaging.sender.MessageSender;
 import com.liferay.portal.kernel.messaging.sender.SynchronousMessageSender;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.model.User;
-import com.liferay.portal.model.UserGroup;
 import com.liferay.portal.theme.ThemeDisplay;
 import junit.framework.TestCase;
 import net.sf.ehcache.Ehcache;
@@ -23,11 +22,8 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.springframework.ldap.core.LdapOperations;
 import org.springframework.ldap.core.simple.SimpleLdapTemplate;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.ui.Model;
-import se.vgregion.accountmanagement.PasswordChangeException;
 import se.vgregion.accountmanagement.service.LdapAccountService;
-import se.vgregion.accountmanagement.service.PasswordChangeService;
 import se.vgregion.ldapservice.SimpleLdapServiceImpl;
 import se.vgregion.ldapservice.SimpleLdapUser;
 import se.vgregion.portal.cs.service.CredentialService;
@@ -37,9 +33,6 @@ import javax.portlet.ActionResponse;
 import javax.portlet.RenderRequest;
 import javax.xml.bind.DatatypeConverter;
 import java.security.MessageDigest;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 import static org.mockito.Mockito.*;
 
@@ -62,29 +55,12 @@ public class PasswordChangeControllerTest extends TestCase {
     private LdapAccountService ldapAccountService = new LdapAccountService();
     
     @InjectMocks
-    private PasswordChangeService passwordChangeService = new PasswordChangeService();
-
-    @InjectMocks
     private PasswordChangeController controller = new PasswordChangeController();
 
-    /*@Value("${ldap.personnel.base}")
-    private String base;
-
-    */private String dominoUsersUserGroupName = "DominoUsers";
-
     {
-        passwordChangeService.setLdapAccountService(ldapAccountService);
         controller.setLdapAccountService(ldapAccountService);
-        controller.setDominoUsersUserGroupName(dominoUsersUserGroupName);
-        controller.setPasswordChangeService(passwordChangeService);
     }
 
-    /*@Before
-    public void setup() {
-        when(credentialService.getUserSiteCredential(anyString(), eq("iNotes"))).thenReturn(new UserSiteCredential());
-    }
-
-    */
     @Test
     public void testShowPasswordChangeForm() throws Exception {
         //Given
@@ -107,57 +83,11 @@ public class PasswordChangeControllerTest extends TestCase {
         assertNotNull(view);
     }
 
-    //This tests the flow of the changePassword method and verifies that "success" is set on the response. It does
-    //not verify that the password is set.
     @Test
-    public void testChangePasswordDominoUser() throws Exception {
+    public void testChangePasswordForUser() throws Exception {
 
         //initial setup
-        ActionRequest request = prepareForIsDominoUserMethod(true);
-
-        String userId = "ex_teste";
-        MessageDigest sha = MessageDigest.getInstance("SHA");
-        String newPassword = "123abc";
-
-        byte[] digest = sha.digest(newPassword.getBytes("UTF-8"));
-        String encryptedPassword = "{SHA}" + DatatypeConverter.printBase64Binary(digest);
-
-        setupUserInMockLdapService(userId, encryptedPassword);
-
-        //Given
-        PowerMockito.mockStatic(MessageBusUtil.class);
-        MessageBusUtil.init(mock(MessageBus.class), mock(MessageSender.class), mock(SynchronousMessageSender.class));
-        String messagebusDestination = "vgr/change_password";
-        when(MessageBusUtil.sendSynchronousMessage(eq(messagebusDestination),
-                any(com.liferay.portal.kernel.messaging.Message.class), anyInt()))
-                .thenAnswer(new Answer<String>() { //Answer is chosen since you can throw exceptions
-                    @Override
-                    public String answer(InvocationOnMock invocation) throws Throwable {
-                        return "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
-                                "<response>\n" +
-                                "<statuscode>1</statuscode>\n" +
-                                "<statusmessage>Lösenordet uppdaterades för xxtst1</statusmessage>\n" +
-                                "</response>";
-                    }
-                });
-        ReflectionTestUtils.setField(passwordChangeService, "changePasswordMessagebusDestination", messagebusDestination);
-        ActionResponse response = mock(ActionResponse.class);
-        when(request.getParameter("password")).thenReturn(newPassword);
-        when(request.getParameter("passwordConfirm")).thenReturn(newPassword);
-
-        //Do
-        controller.changePassword(request, response, mock(Model.class));
-
-        //Verify
-        verify(response).setRenderParameter(eq("success"), anyString());
-//        verify(credentialService).save(any(UserSiteCredential.class));
-    }
-
-    @Test
-    public void testChangePasswordNonDominoUser() throws Exception {
-
-        //initial setup
-        ActionRequest request = prepareForIsDominoUserMethod(false);
+        ActionRequest request = prepareActionRequest();
 
         String userId = "ex_teste";
         MessageDigest sha = MessageDigest.getInstance("SHA");
@@ -178,10 +108,9 @@ public class PasswordChangeControllerTest extends TestCase {
 
         //Verify
         verify(response).setRenderParameter(eq("success"), anyString());
-//        verify(credentialService).save(any(UserSiteCredential.class));
     }
 
-    private ActionRequest prepareForIsDominoUserMethod(boolean isDomino) throws PortalException, SystemException {
+    private ActionRequest prepareActionRequest() throws PortalException, SystemException {
         ActionRequest request = mock(ActionRequest.class);
         ThemeDisplay themeDisplay = new ThemeDisplay();
         User user = mock(User.class);
@@ -189,13 +118,6 @@ public class PasswordChangeControllerTest extends TestCase {
         themeDisplay.setUser(user);
         when(request.getAttribute(WebKeys.THEME_DISPLAY)).thenReturn(themeDisplay);
 
-        //add a role
-        if (isDomino) {
-            UserGroup userGroup = mock(UserGroup.class);
-            when(userGroup.getName()).thenReturn("DominoUsers");
-            List<UserGroup> userGroups = Arrays.asList(userGroup);
-            when(user.getUserGroups()).thenReturn(userGroups);
-        }
         return request;
     }
 
@@ -204,7 +126,7 @@ public class PasswordChangeControllerTest extends TestCase {
     public void testChangePasswordNoReply() throws Exception {
 
         //initial setup
-        ActionRequest request = prepareForIsDominoUserMethod(true);
+        ActionRequest request = prepareActionRequest();
 
         //Given
         PowerMockito.mockStatic(MessageBusUtil.class);
@@ -218,7 +140,7 @@ public class PasswordChangeControllerTest extends TestCase {
                         return null;
                     }
                 });
-        ReflectionTestUtils.setField(passwordChangeService, "changePasswordMessagebusDestination", messagebusDestination);
+
         ActionResponse response = mock(ActionResponse.class);
         when(request.getParameter("password")).thenReturn("123abc");
         when(request.getParameter("passwordConfirm")).thenReturn("123abc");
@@ -254,7 +176,7 @@ public class PasswordChangeControllerTest extends TestCase {
                         return null;
                     }
                 });
-        ReflectionTestUtils.setField(passwordChangeService, "changePasswordMessagebusDestination", messagebusDestination);
+
         ActionResponse response = mock(ActionResponse.class);
 
         when(request.getParameter("password")).thenReturn("123abc");
@@ -266,37 +188,6 @@ public class PasswordChangeControllerTest extends TestCase {
 
         //Verify
         verify(model).addAttribute(eq("errorMessage"), anyString());
-    }
-
-    //Test the isDominoUser method.
-    @Test
-    public void testIsDominoUser() throws PasswordChangeException, SystemException, PortalException {
-        //initial setup
-        ActionRequest request = mock(ActionRequest.class);
-        ThemeDisplay themeDisplay = new ThemeDisplay();
-        User user = mock(User.class);
-        themeDisplay.setUser(user);
-        when(request.getAttribute(WebKeys.THEME_DISPLAY)).thenReturn(themeDisplay);
-
-        //first try with no roles
-        assertFalse(controller.isDominoUser(request));
-
-        //add a role
-        List<UserGroup> userGroups = new ArrayList<UserGroup>();
-        UserGroup userGroup1 = mock(UserGroup.class);
-        when(userGroup1.getName()).thenReturn("someArbitraryName");
-        when(user.getUserGroups()).thenReturn(userGroups);
-
-        //now try with a role that isn't domino
-        assertFalse(controller.isDominoUser(request));
-
-        //now add a domino role
-        UserGroup userGroup2 = mock(UserGroup.class);
-        when(userGroup2.getName()).thenReturn(dominoUsersUserGroupName);
-        userGroups.add(userGroup2);
-
-        //verify we get "true" back
-        assertTrue(controller.isDominoUser(request));
     }
 
     private void setupUserInMockLdapService(String userId, String encryptedPassword) {
