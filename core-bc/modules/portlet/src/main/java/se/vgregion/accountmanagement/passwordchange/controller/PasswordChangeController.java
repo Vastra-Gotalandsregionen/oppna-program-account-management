@@ -19,14 +19,11 @@
 
 package se.vgregion.accountmanagement.passwordchange.controller;
 
-import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.portal.model.UserGroup;
 import com.liferay.portal.theme.ThemeDisplay;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,14 +31,11 @@ import org.springframework.web.portlet.bind.annotation.ActionMapping;
 import org.springframework.web.portlet.bind.annotation.RenderMapping;
 import se.vgregion.accountmanagement.PasswordChangeException;
 import se.vgregion.accountmanagement.service.LdapAccountService;
-import se.vgregion.accountmanagement.service.PasswordChangeService;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletRequest;
 import javax.portlet.RenderRequest;
-import java.util.List;
-import java.util.Locale;
 
 /**
  * Controller class backing up the password change portlet.
@@ -56,27 +50,13 @@ public class PasswordChangeController {
     private static final Logger LOGGER = LoggerFactory.getLogger(PasswordChangeController.class);
 
     @Autowired
-    private PasswordChangeService passwordChangeService;
-    @Autowired
     private LdapAccountService ldapAccountService;
-
-    @Value("${dominoUsersUserGroupName}")
-    private String dominoUsersUserGroupName;
-
 
     /**
      * Constructor.
      */
     public PasswordChangeController() {
 
-    }
-
-    public void setDominoUsersUserGroupName(String dominoUsersUserGroupName) {
-        this.dominoUsersUserGroupName = dominoUsersUserGroupName;
-    }
-
-    public void setPasswordChangeService(PasswordChangeService passwordChangeService) {
-        this.passwordChangeService = passwordChangeService;
     }
 
     /**
@@ -96,16 +76,6 @@ public class PasswordChangeController {
             model.addAttribute("vgrId", screenName);
         } else {
             model.addAttribute("errorMessage", "Kunde inte hitta ditt vgr-id.");
-        }
-
-        final boolean updateInProgress = passwordChangeService.isPasswordUpdateInProgress(screenName);
-
-        if (updateInProgress) {
-            Long secondsElapsed = passwordChangeService.lookupSecondsElapsed(screenName);
-
-            if (secondsElapsed != null) {
-                model.addAttribute("secondsElapsed", secondsElapsed);
-            }
         }
 
         return "passwordChangeForm";
@@ -160,17 +130,10 @@ public class PasswordChangeController {
             //validate
             validatePassword(password, passwordConfirm);
 
-            boolean isDomino = isDominoUser(request);
+            //no domino -> continue with setting password in LDAP only, directly
+            ldapAccountService.setPasswordInLdap(screenName, password);
+            ldapAccountService.verifyPasswordWasModifiedInLdap(screenName, password);
 
-            LOGGER.info("Changing password for " + screenName + ". IsDomino=" + isDomino);
-
-            if (isDomino) {
-                passwordChangeService.updateDominoLdapAndInotes(screenName, password);
-            } else {
-                //no domino -> continue with setting password in LDAP only, directly
-                ldapAccountService.setPasswordInLdap(screenName, password);
-                ldapAccountService.verifyPasswordWasModifiedInLdap(screenName, password);
-            }
             response.setRenderParameter("success", "success");
         } catch (PasswordChangeException ex) {
             model.addAttribute("errorMessage", ex.getMessage());
@@ -196,26 +159,6 @@ public class PasswordChangeController {
             }
         } else {
             throw new PasswordChangeException("Fyll i lösenord.");
-        }
-    }
-
-    boolean isDominoUser(PortletRequest request) throws PasswordChangeException {
-        ThemeDisplay themeDisplay = (ThemeDisplay) request.getAttribute(WebKeys.THEME_DISPLAY);
-        try {
-            List<UserGroup> userGroups = themeDisplay.getUser().getUserGroups();
-            if (userGroups != null) {
-                for (UserGroup userGroup : userGroups) {
-                    String userGroupName = userGroup.getName();
-                    if (userGroupName != null && userGroupName.toLowerCase(Locale.getDefault())
-                            .contains(dominoUsersUserGroupName.toLowerCase(Locale.getDefault()))) {
-                        return true;
-                    }
-                }
-            }
-            //no domino role found
-            return false;
-        } catch (SystemException e) {
-            throw new PasswordChangeException(e);
         }
     }
 

@@ -33,7 +33,6 @@
       <list>
         <value>classpath:ldap.properties</value>
         <value>classpath:camel-test.properties</value>
-        <value>classpath:application.properties</value>
         <value>classpath:security.properties</value>
         <value>classpath:datasource.properties</value>
       </list>
