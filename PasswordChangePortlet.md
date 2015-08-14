@@ -1,0 +1,11 @@
+# Introduction #
+
+The portlet shows a form where the user enters his/her new password. After form submission a request is made to change the password.
+
+The password is changed for both domino and non-domino users. For non-domino users the password is only changed in the LDAP catalog. For domino users the password is updated both in Domino and in the LDAP catalog.
+
+The portlet should only be accessible when the user is authenticated with e-identification (e-legitimation). That makes it secure to let the user change password without entering the current password.
+
+Below is an activity diagram illustrating the flow:
+
+![https://oppna-program-account-management.googlecode.com/svn/wiki/images/change_password.png](https://oppna-program-account-management.googlecode.com/svn/wiki/images/change_password.png)
